@@ -30,13 +30,6 @@ const services = [
   { icon: CalendarDays, title: "Booking Setup", desc: "Allow clients to schedule appointments easily." }
 ];
 
-const portfolio = [
-  { title: "Real Estate Website", category: "Real Estate", gradient: "from-blue-500 to-cyan-400" },
-  { title: "Loan Officer Website", category: "Finance", gradient: "from-indigo-600 to-blue-800" },
-  { title: "Restaurant Website", category: "Hospitality", gradient: "from-orange-400 to-red-500" },
-  { title: "Local Business Website", category: "Services", gradient: "from-emerald-400 to-teal-600" },
-  { title: "E-commerce Store", category: "Retail", gradient: "from-purple-500 to-pink-500" }
-];
 
 export default function Home() {
   return (
@@ -234,24 +227,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Portfolio Section */}
-      <section id="portfolio" className="py-24 bg-background">
-        <div className="container mx-auto px-4 md:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Work</h2>
-            <p className="text-muted-foreground text-lg">Recent projects that deliver results.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {portfolio.map((p, i) => (
-              <div key={i} className="group cursor-pointer">
-                <div className={`w-full aspect-[4/3] rounded-2xl mb-4 bg-gradient-to-br ${p.gradient} shadow-inner opacity-90 group-hover:opacity-100 transition-opacity`} />
-                <div className="text-sm text-primary font-semibold mb-1">{p.category}</div>
-                <h3 className="text-xl font-bold group-hover:text-primary transition-colors">{p.title}</h3>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Testimonials */}
       <section id="testimonials" className="py-24 bg-secondary/50">
