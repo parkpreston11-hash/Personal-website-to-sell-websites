@@ -1,4 +1,3 @@
-import { useState, useEffect } from "wouter/use-location"; // ignore this, we use wouter differently
 import { useLocation, useSearch } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

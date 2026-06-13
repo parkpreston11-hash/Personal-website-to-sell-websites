@@ -12,7 +12,11 @@ import {
   Database, 
   CalendarDays,
   CheckCircle2,
-  Star
+  Star,
+  ExternalLink,
+  Utensils,
+  Scissors,
+  Key
 } from "lucide-react";
 
 const services = [
@@ -274,6 +278,127 @@ export default function Home() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Live Demo Websites Section */}
+      <section id="demos" className="py-24 bg-background border-t border-border">
+        <div className="container mx-auto px-4 md:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-4">
+            <span className="inline-block bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-5">
+              Live Examples
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">See What We Can Build for You</h2>
+            <p className="text-muted-foreground text-lg">
+              These are real, fully functional demo websites — click any one to open and browse it like a real client would.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-14 max-w-6xl mx-auto">
+
+            {/* Restaurant Demo */}
+            <div className="group rounded-2xl overflow-hidden border border-border shadow-md hover:shadow-2xl transition-all duration-300 flex flex-col">
+              <div
+                className="h-52 relative flex items-end p-5"
+                style={{ background: "linear-gradient(135deg, #1a1208 0%, #2d2010 50%, #1a1208 100%)" }}
+              >
+                <div className="absolute inset-0 opacity-15"
+                  style={{ backgroundImage: "repeating-linear-gradient(45deg,#c9a96e 0,#c9a96e 1px,transparent 0,transparent 50%)", backgroundSize: "32px 32px" }} />
+                <div className="relative flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#c9a96e]/20 border border-[#c9a96e]/30 flex items-center justify-center">
+                    <Utensils className="w-5 h-5 text-[#c9a96e]" />
+                  </div>
+                  <div>
+                    <div className="text-white font-bold text-lg leading-none">Bella Vista</div>
+                    <div className="text-white/50 text-xs mt-0.5">Italian Restaurant</div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 p-6 bg-background flex flex-col">
+                <div className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Restaurant</div>
+                <h3 className="font-bold text-xl mb-2">Fine Dining Website</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed flex-1">
+                  A full restaurant site with a seasonal menu, about section, online reservation CTA, and a premium dark aesthetic that commands attention.
+                </p>
+                <Link href="/demo/restaurant" data-testid="link-demo-restaurant">
+                  <Button className="w-full mt-5 gap-2 group-hover:shadow-lg transition-shadow">
+                    Open Demo <ExternalLink className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Barber Demo */}
+            <div className="group rounded-2xl overflow-hidden border border-border shadow-md hover:shadow-2xl transition-all duration-300 flex flex-col">
+              <div
+                className="h-52 relative flex items-end p-5"
+                style={{ background: "linear-gradient(135deg, #0d0d0d 0%, #1f1f1f 60%, #0d0d0d 100%)" }}
+              >
+                <div className="absolute inset-0 opacity-10"
+                  style={{ backgroundImage: "radial-gradient(circle at 1px 1px,rgba(255,255,255,0.4) 1px,transparent 0)", backgroundSize: "24px 24px" }} />
+                <div className="relative flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
+                    <Scissors className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-white font-bold text-lg leading-none">Prestige Cuts</div>
+                    <div className="text-white/50 text-xs mt-0.5">Barbershop</div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 p-6 bg-background flex flex-col">
+                <div className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Barber / Salon</div>
+                <h3 className="font-bold text-xl mb-2">Barbershop Website</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed flex-1">
+                  A sleek, modern barbershop site with services & pricing, team profiles, booking CTA, and a bold all-black design that builds instant credibility.
+                </p>
+                <Link href="/demo/barber" data-testid="link-demo-barber">
+                  <Button className="w-full mt-5 gap-2 group-hover:shadow-lg transition-shadow">
+                    Open Demo <ExternalLink className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Real Estate Demo */}
+            <div className="group rounded-2xl overflow-hidden border border-border shadow-md hover:shadow-2xl transition-all duration-300 flex flex-col">
+              <div
+                className="h-52 relative flex items-end p-5"
+                style={{ background: "linear-gradient(135deg, #0f1923 0%, #1a3a52 60%, #0f2f45 100%)" }}
+              >
+                <div className="absolute inset-0 opacity-10"
+                  style={{ backgroundImage: "radial-gradient(circle at 1px 1px,rgba(255,255,255,0.3) 1px,transparent 0)", backgroundSize: "28px 28px" }} />
+                <div className="relative flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
+                    <Key className="w-5 h-5 text-[#7dc4e4]" />
+                  </div>
+                  <div>
+                    <div className="text-white font-bold text-lg leading-none">Premier Properties</div>
+                    <div className="text-white/50 text-xs mt-0.5">Real Estate Agent</div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 p-6 bg-background flex flex-col">
+                <div className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Real Estate</div>
+                <h3 className="font-bold text-xl mb-2">Realtor Agent Website</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed flex-1">
+                  A professional real estate agent site with active property listings, agent bio, trust stats, and a polished navy design that converts visitors into leads.
+                </p>
+                <Link href="/demo/realestate" data-testid="link-demo-realestate">
+                  <Button className="w-full mt-5 gap-2 group-hover:shadow-lg transition-shadow">
+                    Open Demo <ExternalLink className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-muted-foreground text-sm">
+              Want a site like these? <Link href="/quote" className="text-primary font-semibold underline underline-offset-2 hover:opacity-80">Get your quote in 2 minutes.</Link>
+            </p>
           </div>
         </div>
       </section>
