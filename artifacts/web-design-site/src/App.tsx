@@ -1,4 +1,5 @@
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,6 +20,14 @@ const queryClient = new QueryClient();
 
 const DEMO_PATHS = ["/demo/restaurant", "/demo/barber", "/demo/realestate"];
 
+function ScrollToTop() {
+  const [location] = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
+  return null;
+}
+
 function Router() {
   const [location] = useLocation();
   const isDemo = DEMO_PATHS.some((p) => location.startsWith(p));
@@ -26,6 +35,7 @@ function Router() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <ScrollToTop />
       {!isDemo && !isAdmin && <Navbar />}
       <main className="flex-1">
         <Switch>
