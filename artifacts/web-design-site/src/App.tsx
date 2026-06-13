@@ -9,6 +9,7 @@ import CheckoutPage from "@/pages/checkout";
 import RestaurantDemo from "@/pages/demos/restaurant";
 import BarberDemo from "@/pages/demos/barber";
 import RealEstateDemo from "@/pages/demos/realestate";
+import PackagesPage from "@/pages/packages";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { AiChat } from "@/components/AiChat";
@@ -29,6 +30,7 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/quote" component={QuotePage} />
           <Route path="/checkout" component={CheckoutPage} />
+          <Route path="/packages" component={PackagesPage} />
           <Route path="/demo/restaurant" component={RestaurantDemo} />
           <Route path="/demo/barber" component={BarberDemo} />
           <Route path="/demo/realestate" component={RealEstateDemo} />

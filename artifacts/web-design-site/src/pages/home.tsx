@@ -65,7 +65,7 @@ export default function Home() {
                 Get Your Quote
               </Button>
             </Link>
-            <Link href="#pricing" data-testid="hero-cta-pricing">
+            <Link href="/packages" data-testid="hero-cta-pricing">
               <Button variant="outline" size="lg" className="w-full sm:w-auto text-lg h-14 px-8 border-2">
                 View Packages
               </Button>
