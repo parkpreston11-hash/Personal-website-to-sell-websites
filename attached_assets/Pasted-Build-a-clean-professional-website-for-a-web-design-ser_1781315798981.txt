@@ -1,0 +1,113 @@
+Build a clean, professional website for a web design/service business that sells custom websites to clients.
+
+Website name: [Your Brand Name]
+
+Style:
+Modern, premium, trustworthy, simple, mobile-friendly.
+Use a clean white/dark navy design with blue accents, smooth sections, professional cards, and strong call-to-action buttons.
+
+Pages/sections:
+
+1. Hero Section
+Headline: “Professional Websites Built to Grow Your Business”
+Subheadline: “We create modern, high-converting websites for businesses, creators, and professionals.”
+Buttons:
+- Get Your Quote
+- View Packages
+
+Add trust stats:
+- 100+ Websites Sold
+- 5-Star Customer Satisfaction
+- Fast Delivery
+- Custom Business Designs
+
+2. Services Section
+Show cards for:
+- Business Websites
+- Real Estate Websites
+- Landing Pages
+- Lead Generation Websites
+- E-commerce Websites
+- AI Chatbot Integration
+- CRM/System Connection
+- Booking/Appointment Setup
+
+3. Pricing / Packages Page
+Create 3 pricing cards:
+
+Starter Website — $499
+Includes:
+- 1–3 pages
+- Mobile-friendly design
+- Contact form
+- Basic SEO
+- 3-day delivery
+
+Business Website — $999
+Includes:
+- 5–7 pages
+- Professional design
+- Contact/lead form
+- Google Maps section
+- Basic analytics
+- 5-day delivery
+
+Premium Website — $1,999+
+Includes:
+- Custom design
+- AI chatbot add-on option
+- CRM/system connection option
+- Booking system
+- Advanced lead capture
+- Priority support
+
+4. Add-On Features
+Create selectable add-ons:
+- AI Chatbot: +$299
+- Connect to CRM/System: +$499
+- Booking Calendar: +$199
+- Extra Page: +$99
+- Logo/Branding Help: +$149
+- Monthly Maintenance: +$99/month
+
+5. Quote / Checkout Page
+Make a form where customers can:
+- Enter name
+- Email
+- Phone
+- Business name
+- Choose package
+- Select add-ons
+- Describe what website they want
+
+Show a live estimated total based on package + add-ons.
+
+Add a “Continue to Checkout” button.
+For now, make checkout a clean mock checkout page that shows the selected package, add-ons, total price, and payment button placeholder that says “Payment integration coming soon.”
+
+6. Portfolio Section
+Show example website cards:
+- Real Estate Website
+- Loan Officer Website
+- Restaurant Website
+- Local Business Website
+- E-commerce Store
+Use placeholder images and professional descriptions.
+
+7. Testimonials Section
+Add 3 professional testimonials with 5-star ratings.
+
+8. Contact Section
+Include:
+- Email
+- Phone
+- Contact form
+- Call-to-action: “Ready to get your website built?”
+
+Important:
+Make it simple enough to work on Replit without breaking.
+Use HTML, CSS, and JavaScript only.
+No complicated backend.
+Store quote selections only in the browser for now.
+Make the design look premium and not AI-generated.
+Use clean spacing, professional fonts, rounded cards, shadows, and smooth hover effects.
