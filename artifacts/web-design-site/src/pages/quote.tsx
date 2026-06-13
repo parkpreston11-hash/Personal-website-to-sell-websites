@@ -34,7 +34,7 @@ const formSchema = z.object({
   businessName: z.string().min(2, "Business name required"),
   packageId: z.enum(["starter", "business", "premium"]),
   addOns: z.array(z.string()),
-  details: z.string().optional(),
+  details: z.string().min(10, "Please describe what you want on your website (at least 10 characters)"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -90,6 +90,17 @@ export default function QuotePage() {
       monthly: calculateMonthly(),
     };
     localStorage.setItem("webcraft_order", JSON.stringify(orderData));
+
+    const submission = {
+      id: Date.now().toString(),
+      submittedAt: new Date().toISOString(),
+      ...orderData,
+    };
+    const existing = localStorage.getItem("webcraft_submissions");
+    const all = existing ? JSON.parse(existing) : [];
+    all.push(submission);
+    localStorage.setItem("webcraft_submissions", JSON.stringify(all));
+
     setLocation("/checkout");
   }
 
