@@ -384,9 +384,7 @@ export default function Home() {
         <div className="container mx-auto px-4 md:px-8 max-w-4xl text-center">
           <h2 className="text-3xl md:text-5xl font-bold mb-8">Ready to get your website built?</h2>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mb-12 text-lg">
-            <div className="font-semibold text-primary">hello@webcraftstudio.com</div>
-            <div className="hidden sm:block text-muted-foreground">•</div>
-            <div className="font-semibold">(555) 123-4567</div>
+            <div className="font-semibold text-primary">hello@webstudiolaunch.com</div>
           </div>
           <Link href="/quote">
             <Button size="lg" className="h-16 px-10 text-xl shadow-xl shadow-primary/20">Start Your Project Now</Button>

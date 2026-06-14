@@ -37,7 +37,7 @@ const faqs: { patterns: string[]; answer: string }[] = [
   {
     patterns: ["contact", "reach", "talk", "call", "email", "phone"],
     answer:
-      "You can reach us at:\n\n• Email: hello@webcraftstudio.com\n• Phone: (555) 123-4567\n\nOr scroll to the Contact section at the bottom of the page and send us a message directly.",
+      "You can reach us at:\n\n• Email: hello@webstudiolaunch.com\n\nOr scroll to the Contact section at the bottom of the page and send us a message directly.",
   },
   {
     patterns: ["refund", "guarantee", "money back", "revision", "change"],
@@ -63,7 +63,7 @@ function getBotReply(input: string): string {
       return faq.answer;
     }
   }
-  return "Good question! I'm not sure about that specific detail, but I'd love to connect you with our team.\n\nYou can reach us at hello@webcraftstudio.com or (555) 123-4567 — we respond fast. Or try asking about pricing, services, delivery time, or our demo websites!";
+  return "Good question! I'm not sure about that specific detail, but I'd love to connect you with our team.\n\nYou can reach us at hello@webstudiolaunch.com — we respond fast. Or try asking about pricing, services, delivery time, or our demo websites!";
 }
 
 const SUGGESTIONS = ["What does it cost?", "How fast is delivery?", "Show me the demos", "How do I get started?"];
