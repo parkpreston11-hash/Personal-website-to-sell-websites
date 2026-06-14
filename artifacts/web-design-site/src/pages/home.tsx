@@ -216,7 +216,7 @@ export default function Home() {
               { n: "Booking", p: "$199" },
               { n: "Extra Page", p: "$99" },
               { n: "Branding", p: "$149" },
-              { n: "Website Maintenance", p: "$15/mo" }
+              { n: "Website Maintenance", p: "$50/mo" }
             ].map((addon, i) => (
               <div key={i} className="bg-background border rounded-xl p-4 text-center shadow-sm">
                 <div className="font-semibold mb-1">{addon.n}</div>

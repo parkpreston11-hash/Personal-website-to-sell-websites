@@ -24,7 +24,7 @@ const addOnsList = [
   { id: "booking", name: "Booking Calendar", price: 199 },
   { id: "extra_page", name: "Extra Page", price: 99 },
   { id: "branding", name: "Logo/Branding Help", price: 149 },
-  { id: "maintenance", name: "Website Maintenance (billed monthly)", price: 15, isMonthly: true },
+  { id: "maintenance", name: "Website Maintenance (billed monthly)", price: 50, isMonthly: true },
 ];
 
 const formSchema = z.object({

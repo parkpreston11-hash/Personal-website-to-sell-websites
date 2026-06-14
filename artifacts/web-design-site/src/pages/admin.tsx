@@ -32,7 +32,7 @@ const addOnNames: Record<string, string> = {
   booking: "Booking Calendar (+$199)",
   extra_page: "Extra Page (+$99)",
   branding: "Logo/Branding (+$149)",
-  maintenance: "Website Maintenance (+$15/mo)",
+  maintenance: "Website Maintenance (+$50/mo)",
 };
 
 type Submission = {
