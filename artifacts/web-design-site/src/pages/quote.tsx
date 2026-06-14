@@ -25,6 +25,7 @@ const addOnsList = [
   { id: "extra_page", name: "Extra Page", price: 99 },
   { id: "branding", name: "Logo/Branding Help", price: 149 },
   { id: "maintenance", name: "Website Maintenance (billed monthly)", price: 50, isMonthly: true },
+  { id: "multilang", name: "Multi-Language Support", price: 50 },
 ];
 
 const formSchema = z.object({
