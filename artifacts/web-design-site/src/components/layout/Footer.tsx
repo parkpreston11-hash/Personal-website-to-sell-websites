@@ -7,7 +7,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <img src={logo} alt="WebStudioLaunch logo" className="h-8 w-8 object-contain rounded-lg" />
+              <img src={logo} alt="WebStudioLaunch logo" className="h-12 w-12 object-contain rounded-lg" />
               <span className="font-heading font-bold text-xl tracking-tight">WebStudioLaunch</span>
             </div>
             <p className="text-muted max-w-sm">

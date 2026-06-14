@@ -6,3 +6,21 @@ id = "itXpKO61n3UCB5EnBeSeG"
 uri = "file://artifacts/web-design-site/src/assets/logo.png"
 type = "image"
 title = "webstudiolaunch logo"
+
+[[generated]]
+id = "TAfrsufqXiUHk2ALgR3R_"
+uri = "file://artifacts/web-design-site/src/assets/logo-a.png"
+type = "image"
+title = "logo option A rocket"
+
+[[generated]]
+id = "KyQRA2oqi_leBIPQvReJy"
+uri = "file://artifacts/web-design-site/src/assets/logo-b.png"
+type = "image"
+title = "logo option B bold minimal"
+
+[[generated]]
+id = "t08iSOY9shEkQseuUolG9"
+uri = "file://artifacts/web-design-site/src/assets/logo-c.png"
+type = "image"
+title = "logo option C clean launch"
