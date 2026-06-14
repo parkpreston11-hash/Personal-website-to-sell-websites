@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2, ArrowLeft, Tag, X, Lock, Gift } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, Tag, X, Lock, Gift, ShieldCheck, CreditCard, CheckCircle2 } from "lucide-react";
 
 const REFERRAL_CODE = "mrexcellence";
 const AL_CODE = "al";
@@ -44,6 +45,16 @@ const freeAddonOptions = [
   { id: "admin_panel", name: "Admin Panel", price: 50 },
 ];
 
+function formatCardNumber(val: string) {
+  return val.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
+}
+
+function formatExpiry(val: string) {
+  const digits = val.replace(/\D/g, "").slice(0, 4);
+  if (digits.length >= 3) return digits.slice(0, 2) + " / " + digits.slice(2);
+  return digits;
+}
+
 export default function CheckoutPage() {
   const [order, setOrder] = useState<any>(null);
   const [referralInput, setReferralInput] = useState("");
@@ -51,20 +62,22 @@ export default function CheckoutPage() {
   const [codeStatus, setCodeStatus] = useState<"idle" | "valid" | "invalid">("idle");
   const [freeAddonId, setFreeAddonId] = useState<string | null>(null);
 
+  const [payMethod, setPayMethod] = useState<"card" | "applepay">("card");
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCvc, setCardCvc] = useState("");
+  const [cardName, setCardName] = useState("");
+
   useEffect(() => {
     const savedOrder = localStorage.getItem("webcraft_order");
-    if (savedOrder) {
-      setOrder(JSON.parse(savedOrder));
-    }
+    if (savedOrder) setOrder(JSON.parse(savedOrder));
   }, []);
 
   if (!order) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center">
         <p className="text-xl text-muted-foreground mb-4">No order found.</p>
-        <Link href="/quote">
-          <Button>Return to Quote Builder</Button>
-        </Link>
+        <Link href="/quote"><Button>Return to Quote Builder</Button></Link>
       </div>
     );
   }
@@ -73,20 +86,13 @@ export default function CheckoutPage() {
   const alApplied = appliedCode === AL_CODE;
   const isStarterPackage = order.packageId === "starter";
 
-  // Build effective add-on ID list
-  // mrexcellence forces admin_panel; Al adds the chosen free addon
   const effectiveAddOnIds: string[] = useMemo(() => {
     let ids: string[] = [...(order.addOns ?? [])];
-    if (mrexcellenceApplied && !ids.includes("admin_panel")) {
-      ids = [...ids, "admin_panel"];
-    }
-    if (alApplied && freeAddonId && !ids.includes(freeAddonId)) {
-      ids = [...ids, freeAddonId];
-    }
+    if (mrexcellenceApplied && !ids.includes("admin_panel")) ids = [...ids, "admin_panel"];
+    if (alApplied && freeAddonId && !ids.includes(freeAddonId)) ids = [...ids, freeAddonId];
     return ids;
   }, [order, mrexcellenceApplied, alApplied, freeAddonId]);
 
-  // Package base price
   const packageBasePrice = (() => {
     if (alApplied) return AL_PACKAGE_PRICE;
     if (mrexcellenceApplied && isStarterPackage) return DISCOUNTED_STARTER_PRICE;
@@ -95,352 +101,455 @@ export default function CheckoutPage() {
 
   const originalPackagePrice = packagePrices[order.packageId] ?? 0;
 
-  // Map add-on IDs to objects, carrying the id through
-  const addOns = effectiveAddOnIds
-    .map((id) => ({ id, ...addOnsList[id] }))
-    .filter((a) => a.name);
-
+  const addOns = effectiveAddOnIds.map((id) => ({ id, ...addOnsList[id] })).filter((a) => a.name);
   const oneTimeAddOns = addOns.filter((a) => !a.isMonthly);
   const monthlyAddOns = addOns.filter((a) => a.isMonthly);
 
-  // Get displayed price for an add-on (Al code makes the free one $0)
   function getAddonDisplayPrice(id: string, price: number) {
     if (alApplied && id === freeAddonId) return 0;
     return price;
   }
 
-  const oneTimeTotal =
-    packageBasePrice +
-    oneTimeAddOns.reduce((sum, a) => sum + getAddonDisplayPrice(a.id, a.price), 0);
+  const oneTimeTotal = packageBasePrice + oneTimeAddOns.reduce((sum, a) => sum + getAddonDisplayPrice(a.id, a.price), 0);
   const monthlyTotal = monthlyAddOns.reduce((sum, a) => sum + a.price, 0);
+  const alFreeAddonValue = alApplied && freeAddonId ? (freeAddonOptions.find((a) => a.id === freeAddonId)?.price ?? 0) : 0;
+  const alPackageDelta = alApplied ? AL_PACKAGE_PRICE - originalPackagePrice : 0;
+  const mrexcellenceSavings = mrexcellenceApplied && isStarterPackage ? originalPackagePrice - DISCOUNTED_STARTER_PRICE : 0;
 
   function handleApplyCode() {
     const code = referralInput.trim().toLowerCase();
     if (code === REFERRAL_CODE) {
-      if (!isStarterPackage) {
-        setCodeStatus("invalid");
-        return;
-      }
-      setAppliedCode(code);
-      setCodeStatus("valid");
-      setFreeAddonId(null);
+      if (!isStarterPackage) { setCodeStatus("invalid"); return; }
+      setAppliedCode(code); setCodeStatus("valid"); setFreeAddonId(null);
     } else if (code === AL_CODE) {
-      setAppliedCode(code);
-      setCodeStatus("valid");
-      setFreeAddonId(null);
+      setAppliedCode(code); setCodeStatus("valid"); setFreeAddonId(null);
     } else {
-      setCodeStatus("invalid");
-      setAppliedCode(null);
+      setCodeStatus("invalid"); setAppliedCode(null);
     }
   }
 
   function handleRemoveCode() {
-    setAppliedCode(null);
-    setReferralInput("");
-    setCodeStatus("idle");
-    setFreeAddonId(null);
+    setAppliedCode(null); setReferralInput(""); setCodeStatus("idle"); setFreeAddonId(null);
   }
 
-  // Savings display for mrexcellence
-  const mrexcellenceSavings = mrexcellenceApplied && isStarterPackage
-    ? originalPackagePrice - DISCOUNTED_STARTER_PRICE
-    : 0;
-
-  // Savings display for Al (package delta + free addon value)
-  const alPackageDelta = alApplied ? AL_PACKAGE_PRICE - originalPackagePrice : 0;
-  const alFreeAddonValue = alApplied && freeAddonId
-    ? (freeAddonOptions.find((a) => a.id === freeAddonId)?.price ?? 0)
-    : 0;
+  const codeApplied = !!appliedCode;
 
   return (
     <div className="min-h-screen bg-secondary/20 pt-10 pb-24">
-      <div className="container mx-auto px-4 md:px-8 max-w-3xl">
+      <div className="container mx-auto px-4 md:px-8 max-w-5xl">
+
         <div className="mb-6">
           <Link href="/quote" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" /> Edit Order
           </Link>
         </div>
 
-        <h1 className="text-4xl font-bold mb-8 text-center">Confirm Your Request</h1>
+        <h1 className="text-4xl font-bold mb-2 text-center">Secure Checkout</h1>
+        <p className="text-center text-muted-foreground mb-10 flex items-center justify-center gap-1.5 text-sm">
+          <ShieldCheck className="w-4 h-4 text-green-500" /> SSL encrypted · No payment charged until we confirm your project
+        </p>
 
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
 
-          {/* Client Details */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base text-muted-foreground uppercase tracking-wider font-semibold">Client Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground block mb-0.5">Name</span>
+          {/* ── LEFT: Payment Form ── */}
+          <div className="lg:col-span-3 space-y-6">
+
+            {/* Contact recap */}
+            <Card>
+              <CardContent className="pt-5 pb-5">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">Contact</span>
+                  <Link href="/quote" className="text-xs text-primary hover:underline">Change</Link>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-sm">
                   <span className="font-semibold">{order.name}</span>
+                  <span className="hidden sm:block text-muted-foreground">·</span>
+                  <span className="text-muted-foreground">{order.email}</span>
+                  <span className="hidden sm:block text-muted-foreground">·</span>
+                  <span className="text-muted-foreground">{order.businessName}</span>
                 </div>
-                <div>
-                  <span className="text-muted-foreground block mb-0.5">Business</span>
-                  <span className="font-semibold">{order.businessName}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block mb-0.5">Email</span>
-                  <span className="font-semibold">{order.email}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block mb-0.5">Phone</span>
-                  <span className="font-semibold">{order.phone}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Order Summary */}
-          <Card className="border-primary/20 shadow-lg">
-            <CardHeader className="bg-primary/5 border-b pb-4">
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-primary" />
-                Order Summary
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-
-              {/* Package Line */}
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <div className="font-semibold text-base">{packageNames[order.packageId]}</div>
-                  {(mrexcellenceApplied || alApplied) && (
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-muted-foreground line-through text-sm">${originalPackagePrice}</span>
-                      <span className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold px-2 py-0.5 rounded-full">
-                        Code Applied
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div className="text-right">
-                  {(mrexcellenceApplied || alApplied) && (
-                    <div className="text-muted-foreground line-through text-sm text-right">${originalPackagePrice.toFixed(2)}</div>
-                  )}
-                  <div className={`font-bold text-lg ${(mrexcellenceApplied || alApplied) ? "text-green-600 dark:text-green-400" : ""}`}>
-                    ${packageBasePrice.toFixed(2)}
-                  </div>
-                </div>
-              </div>
-
-              {/* One-time Add-ons */}
-              {oneTimeAddOns.length > 0 && (
-                <div className="space-y-3 pl-4 border-l-2 border-border mb-4">
-                  {oneTimeAddOns.map((addon) => {
-                    const isRequired = mrexcellenceApplied && addon.id === "admin_panel";
-                    const isFree = alApplied && addon.id === freeAddonId;
-                    const displayPrice = getAddonDisplayPrice(addon.id, addon.price);
-                    return (
-                      <div key={addon.id} className="flex justify-between items-center text-sm">
-                        <span className="text-muted-foreground flex items-center gap-1.5">
-                          + {addon.name}
-                          {isRequired && (
-                            <span className="inline-flex items-center gap-0.5 text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 font-bold px-1.5 py-0.5 rounded-full">
-                              <Lock className="w-2.5 h-2.5" /> Required
-                            </span>
-                          )}
-                          {isFree && (
-                            <span className="inline-flex items-center gap-0.5 text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-bold px-1.5 py-0.5 rounded-full">
-                              <Gift className="w-2.5 h-2.5" /> FREE
-                            </span>
-                          )}
-                        </span>
-                        {isFree ? (
-                          <span className="font-semibold text-green-600 dark:text-green-400 flex items-center gap-1">
-                            <span className="line-through text-muted-foreground text-xs">${addon.price}</span>
-                            $0
-                          </span>
-                        ) : (
-                          <span className="font-semibold">+${displayPrice}</span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Monthly Add-ons */}
-              {monthlyAddOns.length > 0 && (
-                <div className="space-y-3 pl-4 border-l-2 border-dashed border-border mb-4">
-                  {monthlyAddOns.map((addon) => (
-                    <div key={addon.id} className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">+ {addon.name}</span>
-                      <span className="font-semibold">+${addon.price}/mo</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <Separator className="my-5" />
-
-              {/* Totals */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-end">
-                  <span className="text-xl font-bold">Total Investment</span>
-                  <div className="text-right">
-                    <span className={`text-4xl font-black ${(mrexcellenceApplied || alApplied) ? "text-green-600 dark:text-green-400" : "text-primary"}`}>
-                      ${oneTimeTotal.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-                {monthlyTotal > 0 && (
-                  <div className="flex justify-between items-center text-muted-foreground text-sm">
-                    <span>Monthly Recurring</span>
-                    <span className="font-semibold">${monthlyTotal}/mo</span>
-                  </div>
-                )}
-                {mrexcellenceApplied && mrexcellenceSavings > 0 && (
-                  <div className="flex justify-between items-center text-green-600 dark:text-green-400 text-sm font-semibold mt-1">
-                    <span>Referral discount saved you</span>
-                    <span>-${mrexcellenceSavings.toFixed(2)}</span>
-                  </div>
-                )}
-                {alApplied && (
-                  <div className="mt-2 space-y-1">
-                    {alPackageDelta !== 0 && (
-                      <div className={`flex justify-between items-center text-sm font-semibold ${alPackageDelta < 0 ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}>
-                        <span>Package price adjustment</span>
-                        <span>{alPackageDelta < 0 ? "-" : "+"}${Math.abs(alPackageDelta).toFixed(2)}</span>
-                      </div>
-                    )}
-                    {alFreeAddonValue > 0 && (
-                      <div className="flex justify-between items-center text-green-600 dark:text-green-400 text-sm font-semibold">
-                        <span>Free add-on value included</span>
-                        <span>-${alFreeAddonValue.toFixed(2)}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Al Code — Free Add-On Selector */}
-          {alApplied && (
-            <Card className="border-green-200 dark:border-green-800 shadow-lg">
-              <CardHeader className="bg-green-50 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800 pb-4">
-                <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
-                  <Gift className="w-5 h-5" />
-                  Pick Your Free Add-On
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4 pb-4">
-                <p className="text-sm text-muted-foreground mb-4">
-                  Your <span className="font-bold uppercase">AL</span> code includes 1 free add-on of your choice. Select one below.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {freeAddonOptions.map((option) => {
-                    const selected = freeAddonId === option.id;
-                    return (
-                      <button
-                        key={option.id}
-                        type="button"
-                        onClick={() => setFreeAddonId(selected ? null : option.id)}
-                        className={`flex items-center justify-between rounded-xl border-2 px-4 py-3 text-left transition-colors ${
-                          selected
-                            ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                            : "border-border bg-background hover:bg-secondary/40"
-                        }`}
-                      >
-                        <span className={`font-medium text-sm ${selected ? "text-green-700 dark:text-green-400" : ""}`}>
-                          {option.name}
-                        </span>
-                        <span className={`text-sm font-bold ml-2 ${selected ? "text-green-600 dark:text-green-400" : "text-muted-foreground line-through"}`}>
-                          {selected ? "FREE" : `$${option.price}`}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-                {!freeAddonId && (
-                  <p className="text-amber-600 dark:text-amber-400 text-xs mt-3 font-medium">
-                    Select one add-on above to claim your free benefit.
-                  </p>
-                )}
               </CardContent>
             </Card>
-          )}
 
-          {/* Referral / Promo Code */}
-          <Card>
-            <CardContent className="pt-5 pb-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Tag className="w-4 h-4 text-primary" />
-                <span className="font-semibold text-sm">Referral / Promo Code</span>
-              </div>
+            {/* Payment method */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-primary" /> Payment Method
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5">
 
-              {appliedCode ? (
-                <div className={`flex items-center justify-between rounded-xl px-4 py-3 border ${
-                  alApplied
-                    ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
-                    : "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
-                }`}>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    <span className="font-bold text-green-700 dark:text-green-400 uppercase tracking-wider text-sm">
-                      {appliedCode}
-                    </span>
-                    <span className="text-green-600 dark:text-green-400 text-sm">
-                      {mrexcellenceApplied && "— Starter $99.99 + Admin Panel required!"}
-                      {alApplied && "— All packages $600 + 1 free add-on!"}
-                    </span>
-                  </div>
-                  <button onClick={handleRemoveCode} className="text-muted-foreground hover:text-foreground transition-colors ml-2 shrink-0">
-                    <X className="w-4 h-4" />
+                {/* Method toggle */}
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setPayMethod("applepay")}
+                    className={`flex items-center justify-center gap-2 rounded-xl border-2 py-3 font-semibold text-sm transition-colors ${
+                      payMethod === "applepay"
+                        ? "border-primary bg-primary/5 text-primary"
+                        : "border-border bg-background text-foreground hover:bg-secondary/40"
+                    }`}
+                  >
+                    {/* Apple logo SVG */}
+                    <svg className="w-4 h-4 fill-current" viewBox="0 0 814 1000" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.2-167.7-103.8c-72.5-76.6-132.4-196.1-132.4-309.9 0-200.9 131.7-307.2 261.5-307.2 66.5 0 121.8 43.4 163.1 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 2.6 198.3 99.2zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z"/>
+                    </svg>
+                    Apple Pay
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPayMethod("card")}
+                    className={`flex items-center justify-center gap-2 rounded-xl border-2 py-3 font-semibold text-sm transition-colors ${
+                      payMethod === "card"
+                        ? "border-primary bg-primary/5 text-primary"
+                        : "border-border bg-background text-foreground hover:bg-secondary/40"
+                    }`}
+                  >
+                    <CreditCard className="w-4 h-4" />
+                    Credit / Debit Card
                   </button>
                 </div>
-              ) : (
-                <div className="flex gap-3">
-                  <Input
-                    data-testid="input-referral-code"
-                    placeholder="Enter referral or promo code"
-                    value={referralInput}
-                    onChange={(e) => {
-                      setReferralInput(e.target.value);
-                      setCodeStatus("idle");
-                    }}
-                    onKeyDown={(e) => e.key === "Enter" && handleApplyCode()}
-                    className={codeStatus === "invalid" ? "border-red-400 focus-visible:ring-red-400" : ""}
-                  />
-                  <Button
-                    data-testid="btn-apply-code"
-                    variant="outline"
-                    onClick={handleApplyCode}
-                    className="shrink-0"
-                  >
-                    Apply
-                  </Button>
-                </div>
+
+                {/* Apple Pay panel */}
+                {payMethod === "applepay" && (
+                  <div className="rounded-xl border border-border bg-secondary/10 p-6 flex flex-col items-center gap-4">
+                    <div className="w-14 h-14 bg-black rounded-2xl flex items-center justify-center">
+                      <svg className="w-7 h-7 fill-white" viewBox="0 0 814 1000" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.2-167.7-103.8c-72.5-76.6-132.4-196.1-132.4-309.9 0-200.9 131.7-307.2 261.5-307.2 66.5 0 121.8 43.4 163.1 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 2.6 198.3 99.2zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z"/>
+                      </svg>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-semibold text-base">Pay with Apple Pay</p>
+                      <p className="text-muted-foreground text-sm mt-1">Use Face ID, Touch ID, or your passcode to pay securely</p>
+                    </div>
+                    <button
+                      type="button"
+                      disabled
+                      className="w-full bg-black text-white rounded-xl py-3.5 font-semibold text-base flex items-center justify-center gap-2 opacity-60 cursor-not-allowed"
+                    >
+                      <svg className="w-5 h-5 fill-white" viewBox="0 0 814 1000" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.2-167.7-103.8c-72.5-76.6-132.4-196.1-132.4-309.9 0-200.9 131.7-307.2 261.5-307.2 66.5 0 121.8 43.4 163.1 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 2.6 198.3 99.2zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z"/>
+                      </svg>
+                      Pay ${oneTimeTotal.toFixed(2)}
+                    </button>
+                    <p className="text-xs text-muted-foreground">Payment processing coming soon</p>
+                  </div>
+                )}
+
+                {/* Card panel */}
+                {payMethod === "card" && (
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="card-number" className="text-sm font-medium">Card Number</Label>
+                      <div className="relative">
+                        <Input
+                          id="card-number"
+                          placeholder="1234 5678 9012 3456"
+                          value={cardNumber}
+                          onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                          className="pr-16 font-mono tracking-wider"
+                          maxLength={19}
+                        />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
+                          {/* Visa */}
+                          <svg className="h-5 w-auto" viewBox="0 0 780 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="780" height="500" rx="40" fill="#1A1F71"/>
+                            <text x="390" y="310" textAnchor="middle" fill="white" fontSize="210" fontFamily="Arial" fontWeight="bold" fontStyle="italic">VISA</text>
+                          </svg>
+                          {/* MC */}
+                          <svg className="h-5 w-auto" viewBox="0 0 780 500" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="780" height="500" rx="40" fill="#252525"/>
+                            <circle cx="300" cy="250" r="150" fill="#EB001B"/>
+                            <circle cx="480" cy="250" r="150" fill="#F79E1B"/>
+                            <path d="M390 139c37.6 28.1 62 72.4 62 122.4S427.6 360.9 390 389c-37.6-28.1-62-72.4-62-122.4S352.4 167.1 390 139z" fill="#FF5F00"/>
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="card-expiry" className="text-sm font-medium">Expiry Date</Label>
+                        <Input
+                          id="card-expiry"
+                          placeholder="MM / YY"
+                          value={cardExpiry}
+                          onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
+                          className="font-mono"
+                          maxLength={7}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="card-cvc" className="text-sm font-medium">Security Code</Label>
+                        <Input
+                          id="card-cvc"
+                          placeholder="CVV"
+                          value={cardCvc}
+                          onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                          className="font-mono"
+                          maxLength={4}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="card-name" className="text-sm font-medium">Name on Card</Label>
+                      <Input
+                        id="card-name"
+                        placeholder="John Doe"
+                        value={cardName}
+                        onChange={(e) => setCardName(e.target.value)}
+                        className="uppercase"
+                      />
+                    </div>
+
+                    {/* Submit button */}
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        disabled
+                        className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-bold text-lg flex items-center justify-center gap-2 opacity-60 cursor-not-allowed"
+                      >
+                        <Lock className="w-5 h-5" />
+                        Pay ${oneTimeTotal.toFixed(2)}
+                        {monthlyTotal > 0 && <span className="text-sm font-normal opacity-80">+ ${monthlyTotal}/mo</span>}
+                      </button>
+                      <p className="text-center text-xs text-muted-foreground mt-3 flex items-center justify-center gap-1">
+                        <ShieldCheck className="w-3.5 h-3.5 text-green-500" />
+                        Payment processing coming soon — we'll contact you to confirm
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+              </CardContent>
+            </Card>
+
+            {/* Trust badges */}
+            <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground pt-1">
+              <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-green-500" /> SSL Secured</span>
+              <span className="flex items-center gap-1.5"><Lock className="w-4 h-4 text-blue-500" /> Data Encrypted</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-primary" /> No charge until confirmed</span>
+            </div>
+          </div>
+
+          {/* ── RIGHT: Order Summary ── */}
+          <div className="lg:col-span-2">
+            <div className="sticky top-24 space-y-5">
+
+              {/* Summary card */}
+              <Card className="border-primary/20 shadow-lg">
+                <CardHeader className="bg-primary/5 border-b pb-4">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <CheckCircle2 className="w-4 h-4 text-primary" />
+                    Order Summary
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-5 pb-5 space-y-4">
+
+                  {/* Package */}
+                  <div className="flex justify-between items-start text-sm">
+                    <div>
+                      <div className="font-semibold">{packageNames[order.packageId]}</div>
+                      {(mrexcellenceApplied || alApplied) && (
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="text-muted-foreground line-through text-xs">${originalPackagePrice}</span>
+                          <span className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold px-1.5 py-0.5 rounded-full">
+                            Promo
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right shrink-0 ml-4">
+                      {(mrexcellenceApplied || alApplied) && (
+                        <div className="text-muted-foreground line-through text-xs">${originalPackagePrice}</div>
+                      )}
+                      <div className={`font-bold ${(mrexcellenceApplied || alApplied) ? "text-green-600 dark:text-green-400" : ""}`}>
+                        ${packageBasePrice.toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Add-ons */}
+                  {oneTimeAddOns.length > 0 && (
+                    <div className="space-y-2 text-sm border-t pt-3">
+                      {oneTimeAddOns.map((addon) => {
+                        const isRequired = mrexcellenceApplied && addon.id === "admin_panel";
+                        const isFree = alApplied && addon.id === freeAddonId;
+                        const displayPrice = getAddonDisplayPrice(addon.id, addon.price);
+                        return (
+                          <div key={addon.id} className="flex justify-between items-center">
+                            <span className="text-muted-foreground flex items-center gap-1 flex-wrap">
+                              + {addon.name}
+                              {isRequired && (
+                                <span className="inline-flex items-center gap-0.5 text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 font-bold px-1.5 py-0.5 rounded-full">
+                                  <Lock className="w-2.5 h-2.5" /> Required
+                                </span>
+                              )}
+                              {isFree && (
+                                <span className="inline-flex items-center gap-0.5 text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-bold px-1.5 py-0.5 rounded-full">
+                                  <Gift className="w-2.5 h-2.5" /> FREE
+                                </span>
+                              )}
+                            </span>
+                            {isFree ? (
+                              <span className="font-semibold text-green-600 dark:text-green-400 flex items-center gap-1 shrink-0 ml-2">
+                                <span className="line-through text-muted-foreground text-xs">${addon.price}</span> $0
+                              </span>
+                            ) : (
+                              <span className="font-semibold shrink-0 ml-2">+${displayPrice}</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {monthlyAddOns.length > 0 && (
+                    <div className="space-y-2 text-sm border-t border-dashed pt-3">
+                      {monthlyAddOns.map((addon) => (
+                        <div key={addon.id} className="flex justify-between items-center">
+                          <span className="text-muted-foreground">+ {addon.name}</span>
+                          <span className="font-semibold shrink-0 ml-2">+${addon.price}/mo</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <Separator />
+
+                  {/* Totals */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-end">
+                      <span className="font-bold text-base">Total</span>
+                      <span className={`text-3xl font-black ${(mrexcellenceApplied || alApplied) ? "text-green-600 dark:text-green-400" : "text-primary"}`}>
+                        ${oneTimeTotal.toFixed(2)}
+                      </span>
+                    </div>
+                    {monthlyTotal > 0 && (
+                      <div className="flex justify-between items-center text-muted-foreground text-xs">
+                        <span>Monthly recurring</span>
+                        <span className="font-semibold">${monthlyTotal}/mo</span>
+                      </div>
+                    )}
+                    {mrexcellenceApplied && mrexcellenceSavings > 0 && (
+                      <div className="flex justify-between items-center text-green-600 dark:text-green-400 text-xs font-semibold">
+                        <span>Referral savings</span>
+                        <span>-${mrexcellenceSavings.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {alApplied && (
+                      <>
+                        {alPackageDelta !== 0 && (
+                          <div className={`flex justify-between items-center text-xs font-semibold ${alPackageDelta < 0 ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}>
+                            <span>Package adjustment</span>
+                            <span>{alPackageDelta < 0 ? "-" : "+"}${Math.abs(alPackageDelta)}</span>
+                          </div>
+                        )}
+                        {alFreeAddonValue > 0 && (
+                          <div className="flex justify-between items-center text-green-600 dark:text-green-400 text-xs font-semibold">
+                            <span>Free add-on value</span>
+                            <span>-${alFreeAddonValue}</span>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Al code — Free Add-On Selector */}
+              {alApplied && (
+                <Card className="border-green-200 dark:border-green-800">
+                  <CardHeader className="bg-green-50 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800 pb-3">
+                    <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400 text-sm">
+                      <Gift className="w-4 h-4" /> Pick Your Free Add-On
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-4 pb-4">
+                    <p className="text-xs text-muted-foreground mb-3">Select 1 add-on included free with your AL code.</p>
+                    <div className="space-y-2">
+                      {freeAddonOptions.map((option) => {
+                        const selected = freeAddonId === option.id;
+                        return (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() => setFreeAddonId(selected ? null : option.id)}
+                            className={`w-full flex items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${
+                              selected
+                                ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                                : "border-border bg-background hover:bg-secondary/40"
+                            }`}
+                          >
+                            <span className={`font-medium ${selected ? "text-green-700 dark:text-green-400" : ""}`}>{option.name}</span>
+                            <span className={`font-bold ml-2 shrink-0 ${selected ? "text-green-600 dark:text-green-400" : "text-muted-foreground line-through"}`}>
+                              {selected ? "FREE" : `$${option.price}`}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {!freeAddonId && (
+                      <p className="text-amber-600 dark:text-amber-400 text-xs mt-2 font-medium">Select one above to claim your free benefit.</p>
+                    )}
+                  </CardContent>
+                </Card>
               )}
 
-              {codeStatus === "invalid" && !appliedCode && (
-                <p className="text-red-500 text-xs mt-2">
-                  {referralInput.trim().toLowerCase() === REFERRAL_CODE
-                    ? "This code only applies to the Starter package."
-                    : "That code doesn't match. Double-check and try again."}
-                </p>
-              )}
-              {!appliedCode && codeStatus === "idle" && (
-                <p className="text-muted-foreground text-xs mt-2">Have a referral or promo code? Enter it above.</p>
-              )}
-            </CardContent>
-          </Card>
+              {/* Promo code */}
+              <Card>
+                <CardContent className="pt-4 pb-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Tag className="w-4 h-4 text-primary" />
+                    <span className="font-semibold text-sm">Promo / Referral Code</span>
+                  </div>
 
-          {/* Payment Button */}
-          <div className="pt-2">
-            <Button
-              size="lg"
-              className="w-full h-16 text-lg bg-foreground hover:bg-foreground/90 cursor-not-allowed"
-              disabled
-              data-testid="btn-payment-placeholder"
-            >
-              Payment Integration Coming Soon
-            </Button>
-            <p className="text-center text-sm text-muted-foreground mt-4">
-              We'll contact you at <span className="font-medium text-foreground">{order.email}</span> within 24 hours to confirm your project and collect payment.
-            </p>
+                  {codeApplied ? (
+                    <div className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl px-4 py-3">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0" />
+                        <span className="font-bold text-green-700 dark:text-green-400 uppercase tracking-wider text-sm">{appliedCode}</span>
+                        <span className="text-green-600 dark:text-green-400 text-xs">
+                          {mrexcellenceApplied && "— Starter $99.99 + Admin Panel required!"}
+                          {alApplied && "— All packages $600 + 1 free add-on!"}
+                        </span>
+                      </div>
+                      <button onClick={handleRemoveCode} className="text-muted-foreground hover:text-foreground transition-colors ml-2 shrink-0">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        data-testid="input-referral-code"
+                        placeholder="Enter code"
+                        value={referralInput}
+                        onChange={(e) => { setReferralInput(e.target.value); setCodeStatus("idle"); }}
+                        onKeyDown={(e) => e.key === "Enter" && handleApplyCode()}
+                        className={`text-sm ${codeStatus === "invalid" ? "border-red-400 focus-visible:ring-red-400" : ""}`}
+                      />
+                      <Button data-testid="btn-apply-code" variant="outline" size="sm" onClick={handleApplyCode} className="shrink-0">
+                        Apply
+                      </Button>
+                    </div>
+                  )}
+
+                  {codeStatus === "invalid" && !codeApplied && (
+                    <p className="text-red-500 text-xs mt-2">
+                      {referralInput.trim().toLowerCase() === REFERRAL_CODE
+                        ? "This code only applies to the Starter package."
+                        : "Invalid code. Double-check and try again."}
+                    </p>
+                  )}
+                  {!codeApplied && codeStatus === "idle" && (
+                    <p className="text-muted-foreground text-xs mt-2">Have a promo or referral code?</p>
+                  )}
+                </CardContent>
+              </Card>
+
+            </div>
           </div>
 
         </div>

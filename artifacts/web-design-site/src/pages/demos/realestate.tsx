@@ -242,7 +242,7 @@ export default function RealEstateDemo() {
                   }} />
                 </div>
                 {/* Stats strip */}
-                <div className="grid grid-cols-3 divide-x" style={{ borderTop: "1px solid rgba(201,169,110,0.15)", divideColor: "rgba(201,169,110,0.15)" }}>
+                <div className="grid grid-cols-3 divide-x" style={{ borderTop: "1px solid rgba(201,169,110,0.15)" }}>
                   {[
                     { val: "$1.2B", label: "Volume" },
                     { val: "500+", label: "Sold" },
