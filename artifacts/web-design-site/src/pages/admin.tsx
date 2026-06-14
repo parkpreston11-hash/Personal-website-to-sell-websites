@@ -177,7 +177,7 @@ export default function AdminPage() {
   }, [authed]);
 
   function handleLogin() {
-    if (pwInput.trim().toLowerCase() === ADMIN_PASSWORD) {
+    if (pwInput.trim() === ADMIN_PASSWORD) {
       setAuthed(true);
       setError(false);
     } else {
