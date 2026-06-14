@@ -20,7 +20,7 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <img src={logo} alt="WebStudioLaunch logo" className="h-12 w-12 object-contain rounded-lg" />
+          <img src={logo} alt="WebStudioLaunch logo" className="h-16 w-16 object-contain rounded-lg" />
           <span className="font-heading font-bold text-xl tracking-tight">WebStudioLaunch</span>
         </Link>
 
