@@ -167,9 +167,10 @@ export default function QuotePage() {
                           {Object.entries(packages).map(([key, pkg]) => (
                             <FormItem key={key} className="relative">
                               <FormControl>
-                                <RadioGroupItem value={key} className="peer sr-only" />
+                                <RadioGroupItem value={key} id={`pkg-${key}`} className="peer sr-only" />
                               </FormControl>
                               <Label
+                                htmlFor={`pkg-${key}`}
                                 className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-background p-4 hover:bg-secondary/50 hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer"
                               >
                                 <span className="font-semibold text-lg">{pkg.name}</span>
