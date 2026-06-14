@@ -1,12 +1,13 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import logo from "@/assets/logo.png";
 
 export function Navbar() {
   const [location] = useLocation();
 
   const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     if (location !== "/") {
-      return; // Will just navigate via Link
+      return;
     }
     e.preventDefault();
     const element = document.getElementById(id);
@@ -19,10 +20,8 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-lg">W</span>
-          </div>
-          <span className="font-heading font-bold text-xl tracking-tight">WebCraft Studio</span>
+          <img src={logo} alt="WebStudioLaunch logo" className="h-8 w-8 object-contain rounded-lg" />
+          <span className="font-heading font-bold text-xl tracking-tight">WebStudioLaunch</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium">

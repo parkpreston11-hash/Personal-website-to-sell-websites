@@ -34,10 +34,10 @@ export default function RestaurantDemo() {
     <div className="min-h-screen bg-[#0e0c09] text-white font-sans">
       {/* Demo Banner */}
       <div className="bg-primary text-primary-foreground text-center py-2 text-sm font-medium flex items-center justify-center gap-3 sticky top-0 z-50">
-        <span>Demo Website — Built by WebCraft Studio</span>
+        <span>Demo Website — Built by WebStudioLaunch</span>
         <Link href="/">
           <span className="underline underline-offset-2 cursor-pointer hover:opacity-80 flex items-center gap-1">
-            <ChevronLeft className="w-3 h-3" /> Back to WebCraft
+            <ChevronLeft className="w-3 h-3" /> Back to WebStudioLaunch
           </span>
         </Link>
       </div>
@@ -195,7 +195,7 @@ export default function RestaurantDemo() {
 
       {/* Footer */}
       <footer className="border-t border-white/10 py-8 text-center text-white/30 text-sm">
-        © 2025 Bella Vista Restaurant · Website by WebCraft Studio
+        © 2025 Bella Vista Restaurant · Website by WebStudioLaunch
       </footer>
     </div>
   );

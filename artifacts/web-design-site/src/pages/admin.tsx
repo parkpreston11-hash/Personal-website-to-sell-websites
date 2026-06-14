@@ -247,7 +247,7 @@ export default function AdminPage() {
             <ClipboardList className="w-4 h-4 text-primary-foreground" />
           </div>
           <div>
-            <div className="font-bold text-base leading-none">WebCraft Admin</div>
+            <div className="font-bold text-base leading-none">WebStudioLaunch Admin</div>
             <div className="text-muted-foreground text-xs mt-0.5">Quote Submissions</div>
           </div>
         </div>

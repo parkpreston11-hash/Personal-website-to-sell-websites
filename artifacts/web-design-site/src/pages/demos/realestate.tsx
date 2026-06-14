@@ -144,10 +144,10 @@ export default function RealEstateDemo() {
 
       {/* Demo Banner */}
       <div className="bg-primary text-primary-foreground text-center py-2 text-sm font-medium flex items-center justify-center gap-3 relative z-[100]">
-        <span>Demo Website — Built by WebCraft Studio</span>
+        <span>Demo Website — Built by WebStudioLaunch</span>
         <Link href="/">
           <span className="underline underline-offset-2 cursor-pointer hover:opacity-80 flex items-center gap-1">
-            <ChevronLeft className="w-3 h-3" /> Back to WebCraft
+            <ChevronLeft className="w-3 h-3" /> Back to WebStudioLaunch
           </span>
         </Link>
       </div>
@@ -636,7 +636,7 @@ export default function RealEstateDemo() {
             <div className="text-xs mt-1" style={{ color: "rgba(245,240,232,0.25)" }}>Licensed Real Estate Broker · DRE #1982301 · New York</div>
           </div>
           <div className="text-xs" style={{ color: "rgba(245,240,232,0.2)" }}>
-            © 2025 Premier Properties. Website by <span style={{ color: "rgba(201,169,110,0.5)" }}>WebCraft Studio</span>
+            © 2025 Premier Properties. Website by <span style={{ color: "rgba(201,169,110,0.5)" }}>WebStudioLaunch</span>
           </div>
         </div>
       </footer>

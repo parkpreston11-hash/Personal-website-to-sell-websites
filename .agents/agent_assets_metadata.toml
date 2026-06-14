@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "itXpKO61n3UCB5EnBeSeG"
+uri = "file://artifacts/web-design-site/src/assets/logo.png"
+type = "image"
+title = "webstudiolaunch logo"

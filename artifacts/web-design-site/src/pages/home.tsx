@@ -237,7 +237,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {[
-              { name: "Sarah Jenkins", biz: "Real Estate Agent", text: "WebCraft completely transformed my online presence. I'm getting more leads than ever before." },
+              { name: "Sarah Jenkins", biz: "Real Estate Agent", text: "WebStudioLaunch completely transformed my online presence. I'm getting more leads than ever before." },
               { name: "Michael Chen", biz: "Restaurant Owner", text: "The new website is beautiful and the menu is so easy to read on mobile. Highly recommended!" },
               { name: "David Miller", biz: "Financial Consultant", text: "Professional, fast, and responsive. They built exactly what I needed to build trust with my clients." }
             ].map((t, i) => (

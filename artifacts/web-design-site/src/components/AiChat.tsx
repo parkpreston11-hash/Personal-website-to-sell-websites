@@ -52,7 +52,7 @@ const faqs: { patterns: string[]; answer: string }[] = [
   {
     patterns: ["hello", "hi", "hey", "sup", "yo", "howdy"],
     answer:
-      "Hey there! Welcome to WebCraft Studio. I'm here to help you find the right website package or answer any questions.\n\nWhat can I help you with — pricing, services, or something else?",
+      "Hey there! Welcome to WebStudioLaunch. I'm here to help you find the right website package or answer any questions.\n\nWhat can I help you with — pricing, services, or something else?",
   },
 ];
 
@@ -73,7 +73,7 @@ export function AiChat() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "bot",
-      text: "Hi! I'm the WebCraft assistant. Ask me anything about our packages, pricing, or what kind of website we can build for you.",
+      text: "Hi! I'm the WebStudioLaunch assistant. Ask me anything about our packages, pricing, or what kind of website we can build for you.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -121,7 +121,7 @@ export function AiChat() {
               <Bot className="w-5 h-5" />
             </div>
             <div>
-              <div className="font-semibold text-sm leading-none mb-0.5">WebCraft Assistant</div>
+              <div className="font-semibold text-sm leading-none mb-0.5">WebStudioLaunch Assistant</div>
               <div className="text-xs text-primary-foreground/70 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 bg-green-400 rounded-full inline-block" />
                 Online now

@@ -28,8 +28,8 @@ const addOnsList: Record<string, { name: string; price: number; isMonthly?: bool
   booking: { name: "Booking Calendar", price: 199 },
   extra_page: { name: "Extra Page", price: 99 },
   branding: { name: "Logo/Branding Help", price: 149 },
-  maintenance: { name: "Website Maintenance (billed monthly)", price: 50, isMonthly: true },
   multilang: { name: "Multi-Language Support", price: 50 },
+  maintenance: { name: "Website Maintenance (billed monthly)", price: 50, isMonthly: true },
 };
 
 export default function CheckoutPage() {
