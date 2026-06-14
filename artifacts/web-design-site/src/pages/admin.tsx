@@ -17,7 +17,7 @@ import {
   LogOut,
 } from "lucide-react";
 
-const ADMIN_PASSWORD = "money";
+const ADMIN_PASSWORD = "FREE";
 const STORAGE_KEY = "webcraft_submissions";
 
 const packageNames: Record<string, string> = {
