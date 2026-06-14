@@ -73,6 +73,18 @@ export default function CheckoutPage() {
     if (savedOrder) setOrder(JSON.parse(savedOrder));
   }, []);
 
+  const mrexcellenceApplied = appliedCode === REFERRAL_CODE;
+  const alApplied = appliedCode === AL_CODE;
+  const isStarterPackage = order?.packageId === "starter";
+
+  const effectiveAddOnIds: string[] = useMemo(() => {
+    if (!order) return [];
+    let ids: string[] = [...(order.addOns ?? [])];
+    if (mrexcellenceApplied && !ids.includes("admin_panel")) ids = [...ids, "admin_panel"];
+    if (alApplied && freeAddonId && !ids.includes(freeAddonId)) ids = [...ids, freeAddonId];
+    return ids;
+  }, [order, mrexcellenceApplied, alApplied, freeAddonId]);
+
   if (!order) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center">
@@ -81,17 +93,6 @@ export default function CheckoutPage() {
       </div>
     );
   }
-
-  const mrexcellenceApplied = appliedCode === REFERRAL_CODE;
-  const alApplied = appliedCode === AL_CODE;
-  const isStarterPackage = order.packageId === "starter";
-
-  const effectiveAddOnIds: string[] = useMemo(() => {
-    let ids: string[] = [...(order.addOns ?? [])];
-    if (mrexcellenceApplied && !ids.includes("admin_panel")) ids = [...ids, "admin_panel"];
-    if (alApplied && freeAddonId && !ids.includes(freeAddonId)) ids = [...ids, freeAddonId];
-    return ids;
-  }, [order, mrexcellenceApplied, alApplied, freeAddonId]);
 
   const packageBasePrice = (() => {
     if (alApplied) return AL_PACKAGE_PRICE;
