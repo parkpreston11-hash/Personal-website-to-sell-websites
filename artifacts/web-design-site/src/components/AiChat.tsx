@@ -12,7 +12,7 @@ const faqs: { patterns: string[]; answer: string }[] = [
   {
     patterns: ["addon", "add-on", "add on", "extra", "chatbot", "crm", "booking", "branding", "logo", "maintenance"],
     answer:
-      "Our add-ons let you customize any package:\n\n• AI Chatbot — +$299\n• CRM/System Connection — +$499\n• Booking Calendar — +$199\n• Extra Page — +$99\n• Logo/Branding Help — +$149\n• Monthly Maintenance — +$99/mo\n\nThey're all selectable on the quote page and the total updates live!",
+      "Our add-ons let you customize any package:\n\n• AI Chatbot — +$299\n• CRM/System Connection — +$499\n• Booking Calendar — +$199\n• Extra Page — +$99\n• Logo/Branding Help — +$149\n• Website Maintenance — +$15/mo (recurring monthly charge)\n\nThey're all selectable on the quote page and the total updates live!",
   },
   {
     patterns: ["how long", "delivery", "turnaround", "timeline", "days", "time"],

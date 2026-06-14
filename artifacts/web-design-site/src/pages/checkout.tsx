@@ -28,7 +28,7 @@ const addOnsList: Record<string, { name: string; price: number; isMonthly?: bool
   booking: { name: "Booking Calendar", price: 199 },
   extra_page: { name: "Extra Page", price: 99 },
   branding: { name: "Logo/Branding Help", price: 149 },
-  maintenance: { name: "Monthly Maintenance", price: 99, isMonthly: true },
+  maintenance: { name: "Website Maintenance (billed monthly)", price: 15, isMonthly: true },
 };
 
 export default function CheckoutPage() {
