@@ -41,6 +41,8 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+import { SEOHead } from "@/components/SEOHead";
+
 export default function QuotePage() {
   const [, setLocation] = useLocation();
   const searchString = useSearch();
@@ -97,6 +99,11 @@ export default function QuotePage() {
 
   return (
     <div className="min-h-screen bg-secondary/20 pt-10 pb-24">
+      <SEOHead
+        title="Get a Custom Web Design Quote"
+        description="Build your custom website quote in minutes. Choose your package, add features, and get a transparent price — no hidden fees, no commitment required."
+        canonical="/quote"
+      />
       <div className="container mx-auto px-4 md:px-8 max-w-6xl">
         <h1 className="text-4xl font-bold mb-8">Build Your Quote</h1>
         

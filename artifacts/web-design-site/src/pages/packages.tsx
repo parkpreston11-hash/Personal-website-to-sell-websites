@@ -109,9 +109,44 @@ const trust = [
   { icon: Clock, stat: "3–5 days", label: "Average delivery" },
 ];
 
+import { SEOHead } from "@/components/SEOHead";
+
+const FAQ_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is $499 really worth it for a small business?",
+      "acceptedAnswer": { "@type": "Answer", "text": "If your website brings in just one new client, it's already paid for itself — usually several times over. It works 24/7, never takes a day off, and never asks for a raise." }
+    },
+    {
+      "@type": "Question",
+      "name": "What makes the Business package worth $500 more than Starter?",
+      "acceptedAnswer": { "@type": "Answer", "text": "The Business package is the difference between a website and a sales machine. More pages means more trust. Lead forms mean more contacts. Google Maps means local buyers find you. Most clients recoup the difference in their first month." }
+    },
+    {
+      "@type": "Question",
+      "name": "Why would I need the Premium website package?",
+      "acceptedAnswer": { "@type": "Answer", "text": "If you want automation — a chatbot capturing leads while you sleep, a booking system so clients book without calling you, or a CRM that logs every inquiry — Premium is built for that. It pays for itself fast when you stop losing after-hours leads." }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I pay before you start building my website?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. You submit your order, we review it with you first, then arrange payment once everything is confirmed. No surprises." }
+    }
+  ]
+};
+
 export default function PackagesPage() {
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Web Design Packages & Pricing — Starter, Business, Premium"
+        description="Compare website packages starting at $499. Starter, Business, and Premium plans with optional add-ons like AI chatbot, CRM, and booking. One-time fee, 3–5 day delivery."
+        canonical="/packages"
+        schema={FAQ_SCHEMA}
+      />
 
       {/* Hero */}
       <section className="pt-28 pb-16 px-4 md:px-8 bg-background text-center">

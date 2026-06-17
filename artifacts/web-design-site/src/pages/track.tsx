@@ -71,6 +71,8 @@ function getStepState(stepId: StatusId, currentStatus: StatusId): "done" | "acti
   return "upcoming";
 }
 
+import { SEOHead } from "@/components/SEOHead";
+
 export default function TrackPage() {
   const [codeInput, setCodeInput] = useState("");
   const [result, setResult] = useState<any | null>(null);
@@ -130,6 +132,11 @@ export default function TrackPage() {
 
   return (
     <div className="min-h-screen bg-secondary/20">
+      <SEOHead
+        title="Track Your Website Project"
+        description="Enter your tracking code to see the real-time status of your website project — from order received to final delivery."
+        noindex
+      />
       {/* Header */}
       <div className="bg-primary text-primary-foreground py-12">
         <div className="container mx-auto px-4 max-w-3xl text-center">

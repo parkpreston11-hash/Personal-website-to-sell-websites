@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Clock, Star, ChevronLeft, Utensils } from "lucide-react";
+import { SEOHead } from "@/components/SEOHead";
 
 const menu = [
   {
@@ -32,6 +33,11 @@ const menu = [
 export default function RestaurantDemo() {
   return (
     <div className="min-h-screen bg-[#0e0c09] text-white font-sans">
+      <SEOHead
+        title="Bella Vista Fine Dining — Restaurant Website Demo"
+        description="A sample restaurant website built by WebStudioLaunch. See what a professional fine dining website looks like."
+        noindex
+      />
       {/* Demo Banner */}
       <div className="bg-primary text-primary-foreground text-center py-2 text-sm font-medium flex items-center justify-center gap-3 sticky top-0 z-50">
         <span>Demo Website — Built by WebStudioLaunch</span>

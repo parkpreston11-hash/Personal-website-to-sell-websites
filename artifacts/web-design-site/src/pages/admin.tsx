@@ -386,6 +386,8 @@ function SubmissionCard({
   );
 }
 
+import { SEOHead } from "@/components/SEOHead";
+
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [pwInput, setPwInput] = useState("");
@@ -468,6 +470,11 @@ export default function AdminPage() {
   if (!authed) {
     return (
       <div className="min-h-screen bg-secondary/20 flex items-center justify-center px-4">
+        <SEOHead
+          title="Admin Dashboard"
+          description="WebStudioLaunch admin dashboard — manage orders and project submissions."
+          noindex
+        />
         <Card className="w-full max-w-sm shadow-xl">
           <CardHeader className="text-center pb-2">
             <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -507,6 +514,11 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-secondary/10">
+      <SEOHead
+        title="Admin Dashboard"
+        description="WebStudioLaunch admin dashboard — manage orders and project submissions."
+        noindex
+      />
       {/* Top bar */}
       <div className="bg-background border-b border-border px-6 py-4 flex items-center justify-between sticky top-0 z-40 shadow-sm">
         <div className="flex items-center gap-3">

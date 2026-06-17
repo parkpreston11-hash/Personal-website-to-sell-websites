@@ -68,6 +68,8 @@ function generateTrackingCode(): string {
 
 type PaymentState = "idle" | "processing" | "success" | "declined";
 
+import { SEOHead } from "@/components/SEOHead";
+
 export default function CheckoutPage() {
   const [order, setOrder] = useState<any>(null);
   const [referralInput, setReferralInput] = useState("");
@@ -218,6 +220,11 @@ export default function CheckoutPage() {
   if (paymentState === "success" && confirmedCode) {
     return (
       <div className="min-h-screen bg-secondary/20 flex items-center justify-center px-4 py-16">
+        <SEOHead
+          title="Order Confirmed"
+          description="Your website order has been confirmed. Track your project status with your tracking code."
+          noindex
+        />
         <div className="max-w-md w-full space-y-6 text-center">
           <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto shadow-xl shadow-green-500/30">
             <CheckCircle2 className="w-10 h-10 text-white" />
@@ -286,6 +293,11 @@ export default function CheckoutPage() {
   // ── MAIN CHECKOUT ───────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-secondary/20 pt-10 pb-24">
+      <SEOHead
+        title="Secure Checkout"
+        description="Complete your website order securely. Transparent pricing, no hidden fees."
+        noindex
+      />
       <div className="container mx-auto px-4 md:px-8 max-w-5xl">
 
         <div className="mb-6">

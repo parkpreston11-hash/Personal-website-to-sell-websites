@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { Phone, Clock, MapPin, Star, ChevronLeft, Scissors } from "lucide-react";
+import { SEOHead } from "@/components/SEOHead";
 
 const services = [
   { name: "Classic Cut", desc: "Precision haircut with wash & style", price: "$35" },
@@ -19,6 +20,11 @@ const team = [
 export default function BarberDemo() {
   return (
     <div className="min-h-screen bg-[#111111] text-white font-sans">
+      <SEOHead
+        title="Prestige Cuts Barbershop — Barbershop Website Demo"
+        description="A sample barbershop website built by WebStudioLaunch. See what a professional barber or salon website looks like."
+        noindex
+      />
       {/* Demo Banner */}
       <div className="bg-primary text-primary-foreground text-center py-2 text-sm font-medium flex items-center justify-center gap-3 sticky top-0 z-50">
         <span>Demo Website — Built by WebStudioLaunch</span>

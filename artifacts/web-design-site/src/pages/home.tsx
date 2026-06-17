@@ -31,9 +31,39 @@ const services = [
 ];
 
 
+import { SEOHead } from "@/components/SEOHead";
+
+const LOCAL_BUSINESS_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "WebStudioLaunch",
+  "url": "https://webstudiolaunch.com",
+  "logo": "https://webstudiolaunch.com/favicon.svg",
+  "image": "https://webstudiolaunch.com/opengraph.jpg",
+  "email": "hello@webstudiolaunch.com",
+  "description": "Professional web design services for businesses, creators, and professionals. Modern, high-converting websites starting at $499.",
+  "priceRange": "$499–$1,999",
+  "areaServed": "Worldwide",
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Website Packages",
+    "itemListElement": [
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Starter Website" }, "price": "499", "priceCurrency": "USD" },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Business Website" }, "price": "999", "priceCurrency": "USD" },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Premium Website" }, "price": "1999", "priceCurrency": "USD" }
+    ]
+  }
+};
+
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
+      <SEOHead
+        title="Professional Web Design Services for Businesses"
+        description="WebStudioLaunch builds modern, high-converting websites for businesses, creators, and professionals. Starting at $499. Delivered in 3–5 days."
+        canonical="/"
+        schema={LOCAL_BUSINESS_SCHEMA}
+      />
       {/* Hero Section */}
       <section className="relative pt-24 pb-32 md:pt-32 md:pb-40 overflow-hidden bg-background">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-background to-background"></div>

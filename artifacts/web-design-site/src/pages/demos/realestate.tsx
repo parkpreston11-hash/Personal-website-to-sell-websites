@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
+import { SEOHead } from "@/components/SEOHead";
 import {
   ChevronLeft,
   Phone,
@@ -141,6 +142,11 @@ export default function RealEstateDemo() {
 
   return (
     <div className="min-h-screen font-sans" style={{ background: "#080808", color: "#f5f0e8" }}>
+      <SEOHead
+        title="Marcus Ellison Real Estate — Realtor Website Demo"
+        description="A sample luxury real estate agent website built by WebStudioLaunch. See what a professional realtor website looks like."
+        noindex
+      />
 
       {/* Demo Banner */}
       <div className="bg-primary text-primary-foreground text-center py-2 text-sm font-medium flex items-center justify-center gap-3 relative z-[100]">
