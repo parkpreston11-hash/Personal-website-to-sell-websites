@@ -76,16 +76,36 @@ export default function TrackPage() {
   const [result, setResult] = useState<any | null>(null);
   const [searched, setSearched] = useState(false);
 
+  function seedDemoIfNeeded() {
+    const raw = localStorage.getItem("webcraft_submissions");
+    const all: any[] = raw ? JSON.parse(raw) : [];
+    const exists = all.some((s) => s.trackingCode === DEMO_CODE);
+    if (!exists) {
+      const entry = {
+        id: "demo-seed-001",
+        submittedAt: DEMO_SUBMISSION.submittedAt,
+        trackingCode: DEMO_CODE,
+        status: DEMO_SUBMISSION.status,
+        estimatedCompletion: DEMO_SUBMISSION.estimatedCompletion,
+        paymentStatus: "confirmed",
+        name: DEMO_SUBMISSION.name,
+        email: DEMO_SUBMISSION.email,
+        phone: "555-000-0001",
+        businessName: DEMO_SUBMISSION.businessName,
+        packageId: DEMO_SUBMISSION.packageId,
+        addOns: ["ai_chatbot", "booking"],
+        details: "Please build a clean, modern business website with a contact form and services section.",
+        total: DEMO_SUBMISSION.total,
+        monthly: 0,
+      };
+      all.push(entry);
+      localStorage.setItem("webcraft_submissions", JSON.stringify(all));
+    }
+  }
+
   function handleTrack(overrideCode?: string) {
     const code = (overrideCode ?? codeInput).trim().toUpperCase();
     if (!code) return;
-
-    // Check demo code first
-    if (code === DEMO_CODE) {
-      setResult(DEMO_SUBMISSION);
-      setSearched(true);
-      return;
-    }
 
     const raw = localStorage.getItem("webcraft_submissions");
     const all = raw ? JSON.parse(raw) : [];
@@ -95,8 +115,14 @@ export default function TrackPage() {
   }
 
   function handleLoadDemo() {
+    seedDemoIfNeeded();
     setCodeInput(DEMO_CODE);
-    handleTrack(DEMO_CODE);
+    // Read from localStorage after seeding
+    const raw = localStorage.getItem("webcraft_submissions");
+    const all = raw ? JSON.parse(raw) : [];
+    const found = all.find((s: any) => s.trackingCode === DEMO_CODE);
+    setResult(found ?? null);
+    setSearched(true);
   }
 
   const isComplete = result?.status === "sent";
