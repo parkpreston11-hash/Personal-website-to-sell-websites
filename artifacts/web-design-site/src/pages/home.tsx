@@ -1,4 +1,5 @@
 import { SEOHead } from "@/components/SEOHead";
+import { SmartTrackButton } from "@/components/SmartTrackButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Link } from "wouter";
@@ -87,18 +88,21 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
+            className="flex flex-col items-center justify-center gap-5 mb-16"
           >
-            <Link href="/quote" data-testid="hero-cta-quote">
-              <Button size="lg" className="w-full sm:w-auto text-lg h-14 px-8 shadow-lg shadow-primary/20">
-                Get Your Quote
-              </Button>
-            </Link>
-            <Link href="/packages" data-testid="hero-cta-pricing">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto text-lg h-14 px-8 border-2">
-                View Packages
-              </Button>
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link href="/quote" data-testid="hero-cta-quote">
+                <Button size="lg" className="w-full sm:w-auto text-lg h-14 px-8 shadow-lg shadow-primary/20">
+                  Get Your Quote
+                </Button>
+              </Link>
+              <Link href="/packages" data-testid="hero-cta-pricing">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto text-lg h-14 px-8 border-2">
+                  View Packages
+                </Button>
+              </Link>
+            </div>
+            <SmartTrackButton variant="pill" />
           </motion.div>
           
           <motion.div 

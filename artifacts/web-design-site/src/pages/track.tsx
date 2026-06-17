@@ -1,5 +1,5 @@
 import { SEOHead } from "@/components/SEOHead";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, CheckCircle2, Circle, Clock, Package, Mail, FlaskConical } from "lucide-react";
@@ -76,6 +76,22 @@ export default function TrackPage() {
   const [codeInput, setCodeInput] = useState("");
   const [result, setResult] = useState<any | null>(null);
   const [searched, setSearched] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    if (code) {
+      const upper = code.trim().toUpperCase();
+      setCodeInput(upper);
+      seedDemoIfNeeded();
+      const raw = localStorage.getItem("webcraft_submissions");
+      const all = raw ? JSON.parse(raw) : [];
+      const found = all.find((s: any) => s.trackingCode === upper);
+      setResult(found ?? null);
+      setSearched(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function seedDemoIfNeeded() {
     const raw = localStorage.getItem("webcraft_submissions");

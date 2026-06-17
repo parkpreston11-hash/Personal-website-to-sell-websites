@@ -177,6 +177,7 @@ export default function CheckoutPage() {
     const all = existing ? JSON.parse(existing) : [];
     all.push(submission);
     localStorage.setItem("webcraft_submissions", JSON.stringify(all));
+    localStorage.setItem("webcraft_my_code", code);
 
     setConfirmedCode(code);
     setPaymentState("success");
