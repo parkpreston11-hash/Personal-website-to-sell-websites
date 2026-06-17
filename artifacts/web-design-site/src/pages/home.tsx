@@ -246,6 +246,7 @@ export default function Home() {
               { n: "Booking", p: "$199" },
               { n: "Extra Page", p: "$99" },
               { n: "Branding", p: "$149" },
+              { n: "SEO Optimization", p: "$30" },
               { n: "Website Maintenance", p: "$50/mo" },
               { n: "Multi-Language Support", p: "$50" }
             ].map((addon, i) => (
