@@ -19,6 +19,9 @@ import {
   Clock,
   Copy,
   Check,
+  Pencil,
+  X,
+  Save,
 } from "lucide-react";
 
 const ADMIN_PASSWORD = "FREE";
@@ -133,13 +136,28 @@ function SubmissionCard({
   sub,
   index,
   onStatusChange,
+  onTrackingCodeUpdate,
 }: {
   sub: Submission;
   index: number;
   onStatusChange: (id: string, status: StatusId) => void;
+  onTrackingCodeUpdate: (id: string, newCode: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [editingCode, setEditingCode] = useState(false);
+  const [codeInput, setCodeInput] = useState(sub.trackingCode ?? "");
   const isComplete = sub.status === "sent";
+
+  function handleSaveCode() {
+    const trimmed = codeInput.trim().toUpperCase();
+    if (trimmed) onTrackingCodeUpdate(sub.id, trimmed);
+    setEditingCode(false);
+  }
+
+  function handleCancelEdit() {
+    setCodeInput(sub.trackingCode ?? "");
+    setEditingCode(false);
+  }
 
   return (
     <div className="border border-border rounded-2xl overflow-hidden bg-background shadow-sm">
@@ -172,23 +190,57 @@ function SubmissionCard({
       {expanded && (
         <div className="border-t border-border px-5 py-5 bg-secondary/10 space-y-5">
 
-          {/* Tracking code — top and prominent */}
+          {/* Tracking code — top and prominent, admin-editable */}
           <div className="bg-background border border-primary/20 rounded-xl px-5 py-4">
-            <div className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-1.5">
-              Tracking Code
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">
+                Tracking Code
+              </div>
+              {!editingCode && (
+                <button
+                  onClick={() => { setCodeInput(sub.trackingCode ?? ""); setEditingCode(true); }}
+                  className="flex items-center gap-1 text-xs text-primary hover:underline font-semibold"
+                  title="Edit tracking code"
+                >
+                  <Pencil className="w-3 h-3" /> Edit
+                </button>
+              )}
             </div>
-            <div className="flex items-center">
-              <span className="font-mono font-black text-2xl tracking-widest text-primary">
-                {sub.trackingCode ?? "—"}
-              </span>
-              {sub.trackingCode && <CopyButton value={sub.trackingCode} />}
-            </div>
-            {sub.estimatedCompletion && !isComplete && (
+
+            {editingCode ? (
+              <div className="space-y-2">
+                <Input
+                  value={codeInput}
+                  onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleSaveCode(); if (e.key === "Escape") handleCancelEdit(); }}
+                  className="font-mono font-bold text-lg tracking-widest uppercase"
+                  placeholder="WSL-XXXXXX"
+                  autoFocus
+                />
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={handleSaveCode} className="gap-1.5">
+                    <Save className="w-3.5 h-3.5" /> Save
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={handleCancelEdit} className="gap-1.5">
+                    <X className="w-3.5 h-3.5" /> Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <span className="font-mono font-black text-2xl tracking-widest text-primary">
+                  {sub.trackingCode ?? "—"}
+                </span>
+                {sub.trackingCode && <CopyButton value={sub.trackingCode} />}
+              </div>
+            )}
+
+            {sub.estimatedCompletion && !isComplete && !editingCode && (
               <div className="text-xs text-muted-foreground mt-1.5">
                 Est. completion: <span className="font-semibold">{formatDateShort(sub.estimatedCompletion)}</span>
               </div>
             )}
-            {isComplete && sub.completedAt && (
+            {isComplete && sub.completedAt && !editingCode && (
               <div className="text-xs text-green-600 dark:text-green-400 mt-1.5 flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3" />
                 Completed {formatDateShort(sub.completedAt)}
@@ -326,6 +378,14 @@ export default function AdminPage() {
         completedAt: status === "sent" ? new Date().toISOString() : s.completedAt,
       };
     });
+    setSubmissions(updated);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  }
+
+  function handleTrackingCodeUpdate(id: string, newCode: string) {
+    const updated = submissions.map((s) =>
+      s.id === id ? { ...s, trackingCode: newCode } : s
+    );
     setSubmissions(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   }
@@ -513,6 +573,7 @@ export default function AdminPage() {
                 sub={sub}
                 index={filtered.length - 1 - i}
                 onStatusChange={handleStatusChange}
+                onTrackingCodeUpdate={handleTrackingCodeUpdate}
               />
             ))}
           </div>

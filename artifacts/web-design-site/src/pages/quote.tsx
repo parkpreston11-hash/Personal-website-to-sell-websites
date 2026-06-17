@@ -41,15 +41,6 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-function generateTrackingCode(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "WSL-";
-  for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return code;
-}
-
 export default function QuotePage() {
   const [, setLocation] = useLocation();
   const searchString = useSearch();
@@ -95,29 +86,12 @@ export default function QuotePage() {
   };
 
   function onSubmit(data: FormValues) {
-    const trackingCode = generateTrackingCode();
-    const estimatedCompletion = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-
     const orderData = {
       ...data,
       total: calculateTotal(),
       monthly: calculateMonthly(),
-      trackingCode,
-      estimatedCompletion,
     };
     localStorage.setItem("webcraft_order", JSON.stringify(orderData));
-
-    const submission = {
-      id: Date.now().toString(),
-      submittedAt: new Date().toISOString(),
-      status: "purchased",
-      ...orderData,
-    };
-    const existing = localStorage.getItem("webcraft_submissions");
-    const all = existing ? JSON.parse(existing) : [];
-    all.push(submission);
-    localStorage.setItem("webcraft_submissions", JSON.stringify(all));
-
     setLocation("/checkout");
   }
 

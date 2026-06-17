@@ -5,12 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Tag, X, Lock, Gift, ShieldCheck, CreditCard, CheckCircle2, Package, Copy, Check } from "lucide-react";
+import {
+  ArrowLeft, Tag, X, Lock, Gift, ShieldCheck, CreditCard,
+  CheckCircle2, XCircle, Package, Copy, Loader2, AlertTriangle,
+} from "lucide-react";
 
 const REFERRAL_CODE = "mrexcellence";
 const AL_CODE = "al";
 const DISCOUNTED_STARTER_PRICE = 99.99;
 const AL_PACKAGE_PRICE = 600;
+const DECLINE_CARD = "4000000000000002";
 
 const packageNames: Record<string, string> = {
   starter: "Starter Website",
@@ -55,6 +59,15 @@ function formatExpiry(val: string) {
   return digits;
 }
 
+function generateTrackingCode(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "WSL-";
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+type PaymentState = "idle" | "processing" | "success" | "declined";
+
 export default function CheckoutPage() {
   const [order, setOrder] = useState<any>(null);
   const [referralInput, setReferralInput] = useState("");
@@ -67,6 +80,11 @@ export default function CheckoutPage() {
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvc, setCardCvc] = useState("");
   const [cardName, setCardName] = useState("");
+  const [cardError, setCardError] = useState("");
+
+  const [paymentState, setPaymentState] = useState<PaymentState>("idle");
+  const [confirmedCode, setConfirmedCode] = useState<string | null>(null);
+  const [codeCopied, setCodeCopied] = useState(false);
 
   useEffect(() => {
     const savedOrder = localStorage.getItem("webcraft_order");
@@ -99,7 +117,6 @@ export default function CheckoutPage() {
     if (mrexcellenceApplied && isStarterPackage) return DISCOUNTED_STARTER_PRICE;
     return packagePrices[order.packageId] ?? 0;
   })();
-
   const originalPackagePrice = packagePrices[order.packageId] ?? 0;
 
   const addOns = effectiveAddOnIds.map((id) => ({ id, ...addOnsList[id] })).filter((a) => a.name);
@@ -133,8 +150,140 @@ export default function CheckoutPage() {
     setAppliedCode(null); setReferralInput(""); setCodeStatus("idle"); setFreeAddonId(null);
   }
 
+  function confirmPayment() {
+    const code = generateTrackingCode();
+    const estimatedCompletion = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    const submission = {
+      id: Date.now().toString(),
+      submittedAt: new Date().toISOString(),
+      trackingCode: code,
+      status: "purchased",
+      estimatedCompletion,
+      paymentStatus: "confirmed",
+      name: order.name,
+      email: order.email,
+      phone: order.phone,
+      businessName: order.businessName,
+      packageId: order.packageId,
+      addOns: effectiveAddOnIds,
+      details: order.details ?? "",
+      total: oneTimeTotal,
+      monthly: monthlyTotal,
+    };
+
+    const existing = localStorage.getItem("webcraft_submissions");
+    const all = existing ? JSON.parse(existing) : [];
+    all.push(submission);
+    localStorage.setItem("webcraft_submissions", JSON.stringify(all));
+
+    setConfirmedCode(code);
+    setPaymentState("success");
+  }
+
+  function handlePayCard() {
+    setCardError("");
+    const digits = cardNumber.replace(/\s/g, "");
+    if (digits.length !== 16) { setCardError("Please enter a valid 16-digit card number."); return; }
+    if (cardExpiry.replace(/\s/g, "").length < 4) { setCardError("Please enter a valid expiry date."); return; }
+    if (cardCvc.length < 3) { setCardError("Please enter a valid security code."); return; }
+    if (!cardName.trim()) { setCardError("Please enter the name on your card."); return; }
+
+    setPaymentState("processing");
+    setTimeout(() => {
+      if (digits === DECLINE_CARD) {
+        setPaymentState("declined");
+      } else {
+        confirmPayment();
+      }
+    }, 2000);
+  }
+
+  function handlePayApple() {
+    setPaymentState("processing");
+    setTimeout(() => confirmPayment(), 2000);
+  }
+
+  function handleCopyCode() {
+    if (!confirmedCode) return;
+    navigator.clipboard.writeText(confirmedCode);
+    setCodeCopied(true);
+    setTimeout(() => setCodeCopied(false), 2000);
+  }
+
+  const isProcessing = paymentState === "processing";
   const codeApplied = !!appliedCode;
 
+  // ── SUCCESS SCREEN ──────────────────────────────────────────────
+  if (paymentState === "success" && confirmedCode) {
+    return (
+      <div className="min-h-screen bg-secondary/20 flex items-center justify-center px-4 py-16">
+        <div className="max-w-md w-full space-y-6 text-center">
+          <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto shadow-xl shadow-green-500/30">
+            <CheckCircle2 className="w-10 h-10 text-white" />
+          </div>
+
+          <div>
+            <h1 className="text-3xl font-black text-green-600 dark:text-green-400">Payment Confirmed!</h1>
+            <p className="text-muted-foreground mt-2">
+              Thank you, <span className="font-semibold text-foreground">{order.name}</span>. Your project is now in our queue.
+            </p>
+          </div>
+
+          <Card className="border-primary/30 shadow-xl text-left">
+            <CardContent className="pt-6 pb-6">
+              <div className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-1">
+                Your Project Tracking Code
+              </div>
+              <div className="font-mono font-black text-4xl tracking-widest text-primary mb-2">
+                {confirmedCode}
+              </div>
+              <p className="text-sm text-muted-foreground mb-5">
+                Save this code. Enter it on the <strong>Track Order</strong> page at any time to check your project's progress.
+              </p>
+              <div className="flex gap-3">
+                <Button variant="outline" size="sm" onClick={handleCopyCode} className="gap-1.5">
+                  {codeCopied ? <><CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy Code</>}
+                </Button>
+                <Link href="/track">
+                  <Button size="sm" className="gap-1.5">
+                    <Package className="w-3.5 h-3.5" /> Track My Project
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="bg-background border border-border rounded-xl px-5 py-4 text-sm text-left space-y-2">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Package</span>
+              <span className="font-semibold">{packageNames[order.packageId]}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Amount Paid</span>
+              <span className="font-bold text-primary">${oneTimeTotal.toFixed(2)}</span>
+            </div>
+            {monthlyTotal > 0 && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Monthly</span>
+                <span className="font-semibold">${monthlyTotal}/mo</span>
+              </div>
+            )}
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            We'll reach out to <span className="font-medium text-foreground">{order.email}</span> within 24 hours to kick things off.
+          </p>
+
+          <Link href="/" className="inline-block text-sm text-primary hover:underline">
+            ← Back to Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // ── MAIN CHECKOUT ───────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-secondary/20 pt-10 pb-24">
       <div className="container mx-auto px-4 md:px-8 max-w-5xl">
@@ -146,35 +295,9 @@ export default function CheckoutPage() {
         </div>
 
         <h1 className="text-4xl font-bold mb-2 text-center">Secure Checkout</h1>
-        <p className="text-center text-muted-foreground mb-6 flex items-center justify-center gap-1.5 text-sm">
-          <ShieldCheck className="w-4 h-4 text-green-500" /> SSL encrypted · No payment charged until we confirm your project
+        <p className="text-center text-muted-foreground mb-10 flex items-center justify-center gap-1.5 text-sm">
+          <ShieldCheck className="w-4 h-4 text-green-500" /> SSL encrypted · Your tracking code is generated after payment
         </p>
-
-        {/* Tracking code banner */}
-        {order.trackingCode && (
-          <div className="mb-8 bg-primary/5 border border-primary/20 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
-                <Package className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-0.5">Your Project Tracking Code</div>
-                <div className="font-mono font-black text-2xl tracking-widest text-primary">{order.trackingCode}</div>
-              </div>
-            </div>
-            <div className="text-sm text-muted-foreground sm:text-right">
-              <p>Save this code — use it to track your project progress at <span className="font-semibold text-foreground">/track</span></p>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(order.trackingCode);
-                }}
-                className="mt-1 inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-medium"
-              >
-                <Copy className="w-3 h-3" /> Copy code
-              </button>
-            </div>
-          </div>
-        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
 
@@ -198,6 +321,19 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
+            {/* Declined banner */}
+            {paymentState === "declined" && (
+              <div className="flex items-start gap-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl px-5 py-4">
+                <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-red-700 dark:text-red-400">Payment Denied</p>
+                  <p className="text-sm text-red-600/80 dark:text-red-400/70 mt-0.5">
+                    Your card was declined. Please try another card or check your card details and try again.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Payment method */}
             <Card>
               <CardHeader className="pb-3">
@@ -209,32 +345,16 @@ export default function CheckoutPage() {
 
                 {/* Method toggle */}
                 <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setPayMethod("applepay")}
-                    className={`flex items-center justify-center gap-2 rounded-xl border-2 py-3 font-semibold text-sm transition-colors ${
-                      payMethod === "applepay"
-                        ? "border-primary bg-primary/5 text-primary"
-                        : "border-border bg-background text-foreground hover:bg-secondary/40"
-                    }`}
-                  >
-                    {/* Apple logo SVG */}
+                  <button type="button" onClick={() => setPayMethod("applepay")} disabled={isProcessing}
+                    className={`flex items-center justify-center gap-2 rounded-xl border-2 py-3 font-semibold text-sm transition-colors ${payMethod === "applepay" ? "border-primary bg-primary/5 text-primary" : "border-border bg-background text-foreground hover:bg-secondary/40"}`}>
                     <svg className="w-4 h-4 fill-current" viewBox="0 0 814 1000" xmlns="http://www.w3.org/2000/svg">
                       <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.2-167.7-103.8c-72.5-76.6-132.4-196.1-132.4-309.9 0-200.9 131.7-307.2 261.5-307.2 66.5 0 121.8 43.4 163.1 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 2.6 198.3 99.2zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z"/>
                     </svg>
                     Apple Pay
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setPayMethod("card")}
-                    className={`flex items-center justify-center gap-2 rounded-xl border-2 py-3 font-semibold text-sm transition-colors ${
-                      payMethod === "card"
-                        ? "border-primary bg-primary/5 text-primary"
-                        : "border-border bg-background text-foreground hover:bg-secondary/40"
-                    }`}
-                  >
-                    <CreditCard className="w-4 h-4" />
-                    Credit / Debit Card
+                  <button type="button" onClick={() => setPayMethod("card")} disabled={isProcessing}
+                    className={`flex items-center justify-center gap-2 rounded-xl border-2 py-3 font-semibold text-sm transition-colors ${payMethod === "card" ? "border-primary bg-primary/5 text-primary" : "border-border bg-background text-foreground hover:bg-secondary/40"}`}>
+                    <CreditCard className="w-4 h-4" /> Credit / Debit Card
                   </button>
                 </div>
 
@@ -248,19 +368,19 @@ export default function CheckoutPage() {
                     </div>
                     <div className="text-center">
                       <p className="font-semibold text-base">Pay with Apple Pay</p>
-                      <p className="text-muted-foreground text-sm mt-1">Use Face ID, Touch ID, or your passcode to pay securely</p>
+                      <p className="text-muted-foreground text-sm mt-1">Use Face ID, Touch ID, or your passcode</p>
                     </div>
-                    <button
-                      type="button"
-                      disabled
-                      className="w-full bg-black text-white rounded-xl py-3.5 font-semibold text-base flex items-center justify-center gap-2 opacity-60 cursor-not-allowed"
-                    >
-                      <svg className="w-5 h-5 fill-white" viewBox="0 0 814 1000" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.2-167.7-103.8c-72.5-76.6-132.4-196.1-132.4-309.9 0-200.9 131.7-307.2 261.5-307.2 66.5 0 121.8 43.4 163.1 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 2.6 198.3 99.2zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z"/>
-                      </svg>
-                      Pay ${oneTimeTotal.toFixed(2)}
+                    <button type="button" onClick={handlePayApple} disabled={isProcessing}
+                      className="w-full bg-black text-white rounded-xl py-3.5 font-semibold text-base flex items-center justify-center gap-2 hover:bg-black/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+                      {isProcessing ? <><Loader2 className="w-5 h-5 animate-spin" /> Processing…</> : (
+                        <>
+                          <svg className="w-5 h-5 fill-white" viewBox="0 0 814 1000" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.2-167.7-103.8c-72.5-76.6-132.4-196.1-132.4-309.9 0-200.9 131.7-307.2 261.5-307.2 66.5 0 121.8 43.4 163.1 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 2.6 198.3 99.2zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z"/>
+                          </svg>
+                          Pay ${oneTimeTotal.toFixed(2)}
+                        </>
+                      )}
                     </button>
-                    <p className="text-xs text-muted-foreground">Payment processing coming soon</p>
                   </div>
                 )}
 
@@ -270,21 +390,15 @@ export default function CheckoutPage() {
                     <div className="space-y-1.5">
                       <Label htmlFor="card-number" className="text-sm font-medium">Card Number</Label>
                       <div className="relative">
-                        <Input
-                          id="card-number"
-                          placeholder="1234 5678 9012 3456"
+                        <Input id="card-number" placeholder="1234 5678 9012 3456"
                           value={cardNumber}
-                          onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                          className="pr-16 font-mono tracking-wider"
-                          maxLength={19}
-                        />
+                          onChange={(e) => { setCardNumber(formatCardNumber(e.target.value)); setCardError(""); setPaymentState("idle"); }}
+                          className="pr-16 font-mono tracking-wider" maxLength={19} disabled={isProcessing} />
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
-                          {/* Visa */}
                           <svg className="h-5 w-auto" viewBox="0 0 780 500" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect width="780" height="500" rx="40" fill="#1A1F71"/>
                             <text x="390" y="310" textAnchor="middle" fill="white" fontSize="210" fontFamily="Arial" fontWeight="bold" fontStyle="italic">VISA</text>
                           </svg>
-                          {/* MC */}
                           <svg className="h-5 w-auto" viewBox="0 0 780 500" xmlns="http://www.w3.org/2000/svg">
                             <rect width="780" height="500" rx="40" fill="#252525"/>
                             <circle cx="300" cy="250" r="150" fill="#EB001B"/>
@@ -298,53 +412,41 @@ export default function CheckoutPage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <Label htmlFor="card-expiry" className="text-sm font-medium">Expiry Date</Label>
-                        <Input
-                          id="card-expiry"
-                          placeholder="MM / YY"
-                          value={cardExpiry}
-                          onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
-                          className="font-mono"
-                          maxLength={7}
-                        />
+                        <Input id="card-expiry" placeholder="MM / YY" value={cardExpiry}
+                          onChange={(e) => { setCardExpiry(formatExpiry(e.target.value)); setCardError(""); }}
+                          className="font-mono" maxLength={7} disabled={isProcessing} />
                       </div>
                       <div className="space-y-1.5">
                         <Label htmlFor="card-cvc" className="text-sm font-medium">Security Code</Label>
-                        <Input
-                          id="card-cvc"
-                          placeholder="CVV"
-                          value={cardCvc}
-                          onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                          className="font-mono"
-                          maxLength={4}
-                        />
+                        <Input id="card-cvc" placeholder="CVV" value={cardCvc}
+                          onChange={(e) => { setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 4)); setCardError(""); }}
+                          className="font-mono" maxLength={4} disabled={isProcessing} />
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <Label htmlFor="card-name" className="text-sm font-medium">Name on Card</Label>
-                      <Input
-                        id="card-name"
-                        placeholder="John Doe"
-                        value={cardName}
-                        onChange={(e) => setCardName(e.target.value)}
-                        className="uppercase"
-                      />
+                      <Input id="card-name" placeholder="John Doe" value={cardName}
+                        onChange={(e) => { setCardName(e.target.value); setCardError(""); }}
+                        className="uppercase" disabled={isProcessing} />
                     </div>
 
-                    {/* Submit button */}
+                    {cardError && (
+                      <div className="flex items-center gap-2 text-red-500 text-sm">
+                        <AlertTriangle className="w-4 h-4 shrink-0" /> {cardError}
+                      </div>
+                    )}
+
                     <div className="pt-2">
-                      <button
-                        type="button"
-                        disabled
-                        className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-bold text-lg flex items-center justify-center gap-2 opacity-60 cursor-not-allowed"
-                      >
-                        <Lock className="w-5 h-5" />
-                        Pay ${oneTimeTotal.toFixed(2)}
-                        {monthlyTotal > 0 && <span className="text-sm font-normal opacity-80">+ ${monthlyTotal}/mo</span>}
+                      <button type="button" onClick={handlePayCard} disabled={isProcessing}
+                        className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-bold text-lg flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed">
+                        {isProcessing
+                          ? <><Loader2 className="w-5 h-5 animate-spin" /> Processing…</>
+                          : <><Lock className="w-5 h-5" /> Pay ${oneTimeTotal.toFixed(2)}{monthlyTotal > 0 && <span className="text-sm font-normal opacity-80">+ ${monthlyTotal}/mo</span>}</>
+                        }
                       </button>
-                      <p className="text-center text-xs text-muted-foreground mt-3 flex items-center justify-center gap-1">
-                        <ShieldCheck className="w-3.5 h-3.5 text-green-500" />
-                        Payment processing coming soon — we'll contact you to confirm
+                      <p className="text-center text-xs text-muted-foreground mt-2">
+                        To test a declined card, use <span className="font-mono font-semibold">4000 0000 0000 0002</span>
                       </p>
                     </div>
                   </div>
@@ -357,7 +459,7 @@ export default function CheckoutPage() {
             <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground pt-1">
               <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-green-500" /> SSL Secured</span>
               <span className="flex items-center gap-1.5"><Lock className="w-4 h-4 text-blue-500" /> Data Encrypted</span>
-              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-primary" /> No charge until confirmed</span>
+              <span className="flex items-center gap-1.5"><Package className="w-4 h-4 text-primary" /> Tracking code issued after payment</span>
             </div>
           </div>
 
@@ -365,26 +467,21 @@ export default function CheckoutPage() {
           <div className="lg:col-span-2">
             <div className="sticky top-24 space-y-5">
 
-              {/* Summary card */}
               <Card className="border-primary/20 shadow-lg">
                 <CardHeader className="bg-primary/5 border-b pb-4">
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <CheckCircle2 className="w-4 h-4 text-primary" />
-                    Order Summary
+                    <CheckCircle2 className="w-4 h-4 text-primary" /> Order Summary
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-5 pb-5 space-y-4">
 
-                  {/* Package */}
                   <div className="flex justify-between items-start text-sm">
                     <div>
                       <div className="font-semibold">{packageNames[order.packageId]}</div>
                       {(mrexcellenceApplied || alApplied) && (
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className="text-muted-foreground line-through text-xs">${originalPackagePrice}</span>
-                          <span className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold px-1.5 py-0.5 rounded-full">
-                            Promo
-                          </span>
+                          <span className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold px-1.5 py-0.5 rounded-full">Promo</span>
                         </div>
                       )}
                     </div>
@@ -398,35 +495,22 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  {/* Add-ons */}
                   {oneTimeAddOns.length > 0 && (
                     <div className="space-y-2 text-sm border-t pt-3">
                       {oneTimeAddOns.map((addon) => {
                         const isRequired = mrexcellenceApplied && addon.id === "admin_panel";
                         const isFree = alApplied && addon.id === freeAddonId;
-                        const displayPrice = getAddonDisplayPrice(addon.id, addon.price);
                         return (
                           <div key={addon.id} className="flex justify-between items-center">
                             <span className="text-muted-foreground flex items-center gap-1 flex-wrap">
                               + {addon.name}
-                              {isRequired && (
-                                <span className="inline-flex items-center gap-0.5 text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 font-bold px-1.5 py-0.5 rounded-full">
-                                  <Lock className="w-2.5 h-2.5" /> Required
-                                </span>
-                              )}
-                              {isFree && (
-                                <span className="inline-flex items-center gap-0.5 text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-bold px-1.5 py-0.5 rounded-full">
-                                  <Gift className="w-2.5 h-2.5" /> FREE
-                                </span>
-                              )}
+                              {isRequired && <span className="inline-flex items-center gap-0.5 text-xs bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded-full"><Lock className="w-2.5 h-2.5" /> Required</span>}
+                              {isFree && <span className="inline-flex items-center gap-0.5 text-xs bg-green-100 text-green-700 font-bold px-1.5 py-0.5 rounded-full"><Gift className="w-2.5 h-2.5" /> FREE</span>}
                             </span>
-                            {isFree ? (
-                              <span className="font-semibold text-green-600 dark:text-green-400 flex items-center gap-1 shrink-0 ml-2">
-                                <span className="line-through text-muted-foreground text-xs">${addon.price}</span> $0
-                              </span>
-                            ) : (
-                              <span className="font-semibold shrink-0 ml-2">+${displayPrice}</span>
-                            )}
+                            {isFree
+                              ? <span className="font-semibold text-green-600 flex items-center gap-1 shrink-0 ml-2"><span className="line-through text-muted-foreground text-xs">${addon.price}</span> $0</span>
+                              : <span className="font-semibold shrink-0 ml-2">+${getAddonDisplayPrice(addon.id, addon.price)}</span>
+                            }
                           </div>
                         );
                       })}
@@ -446,7 +530,6 @@ export default function CheckoutPage() {
 
                   <Separator />
 
-                  {/* Totals */}
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-end">
                       <span className="font-bold text-base">Total</span>
@@ -461,23 +544,20 @@ export default function CheckoutPage() {
                       </div>
                     )}
                     {mrexcellenceApplied && mrexcellenceSavings > 0 && (
-                      <div className="flex justify-between items-center text-green-600 dark:text-green-400 text-xs font-semibold">
-                        <span>Referral savings</span>
-                        <span>-${mrexcellenceSavings.toFixed(2)}</span>
+                      <div className="flex justify-between items-center text-green-600 text-xs font-semibold">
+                        <span>Referral savings</span><span>-${mrexcellenceSavings.toFixed(2)}</span>
                       </div>
                     )}
                     {alApplied && (
                       <>
                         {alPackageDelta !== 0 && (
-                          <div className={`flex justify-between items-center text-xs font-semibold ${alPackageDelta < 0 ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}>
-                            <span>Package adjustment</span>
-                            <span>{alPackageDelta < 0 ? "-" : "+"}${Math.abs(alPackageDelta)}</span>
+                          <div className={`flex justify-between items-center text-xs font-semibold ${alPackageDelta < 0 ? "text-green-600" : "text-amber-600"}`}>
+                            <span>Package adjustment</span><span>{alPackageDelta < 0 ? "-" : "+"}${Math.abs(alPackageDelta)}</span>
                           </div>
                         )}
                         {alFreeAddonValue > 0 && (
-                          <div className="flex justify-between items-center text-green-600 dark:text-green-400 text-xs font-semibold">
-                            <span>Free add-on value</span>
-                            <span>-${alFreeAddonValue}</span>
+                          <div className="flex justify-between items-center text-green-600 text-xs font-semibold">
+                            <span>Free add-on value</span><span>-${alFreeAddonValue}</span>
                           </div>
                         )}
                       </>
@@ -486,7 +566,7 @@ export default function CheckoutPage() {
                 </CardContent>
               </Card>
 
-              {/* Al code — Free Add-On Selector */}
+              {/* Al code free add-on selector */}
               {alApplied && (
                 <Card className="border-green-200 dark:border-green-800">
                   <CardHeader className="bg-green-50 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800 pb-3">
@@ -500,27 +580,16 @@ export default function CheckoutPage() {
                       {freeAddonOptions.map((option) => {
                         const selected = freeAddonId === option.id;
                         return (
-                          <button
-                            key={option.id}
-                            type="button"
-                            onClick={() => setFreeAddonId(selected ? null : option.id)}
-                            className={`w-full flex items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${
-                              selected
-                                ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                                : "border-border bg-background hover:bg-secondary/40"
-                            }`}
-                          >
+                          <button key={option.id} type="button" onClick={() => setFreeAddonId(selected ? null : option.id)}
+                            className={`w-full flex items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${selected ? "border-green-500 bg-green-50 dark:bg-green-900/20" : "border-border bg-background hover:bg-secondary/40"}`}>
                             <span className={`font-medium ${selected ? "text-green-700 dark:text-green-400" : ""}`}>{option.name}</span>
-                            <span className={`font-bold ml-2 shrink-0 ${selected ? "text-green-600 dark:text-green-400" : "text-muted-foreground line-through"}`}>
+                            <span className={`font-bold ml-2 shrink-0 ${selected ? "text-green-600" : "text-muted-foreground line-through"}`}>
                               {selected ? "FREE" : `$${option.price}`}
                             </span>
                           </button>
                         );
                       })}
                     </div>
-                    {!freeAddonId && (
-                      <p className="text-amber-600 dark:text-amber-400 text-xs mt-2 font-medium">Select one above to claim your free benefit.</p>
-                    )}
                   </CardContent>
                 </Card>
               )}
@@ -532,42 +601,30 @@ export default function CheckoutPage() {
                     <Tag className="w-4 h-4 text-primary" />
                     <span className="font-semibold text-sm">Promo / Referral Code</span>
                   </div>
-
                   {codeApplied ? (
                     <div className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl px-4 py-3">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0" />
+                        <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
                         <span className="font-bold text-green-700 dark:text-green-400 uppercase tracking-wider text-sm">{appliedCode}</span>
-                        <span className="text-green-600 dark:text-green-400 text-xs">
+                        <span className="text-green-600 text-xs">
                           {mrexcellenceApplied && "— Starter $99.99 + Admin Panel required!"}
                           {alApplied && "— All packages $600 + 1 free add-on!"}
                         </span>
                       </div>
-                      <button onClick={handleRemoveCode} className="text-muted-foreground hover:text-foreground transition-colors ml-2 shrink-0">
-                        <X className="w-4 h-4" />
-                      </button>
+                      <button onClick={handleRemoveCode} className="text-muted-foreground hover:text-foreground ml-2 shrink-0"><X className="w-4 h-4" /></button>
                     </div>
                   ) : (
                     <div className="flex gap-2">
-                      <Input
-                        data-testid="input-referral-code"
-                        placeholder="Enter code"
-                        value={referralInput}
+                      <Input data-testid="input-referral-code" placeholder="Enter code" value={referralInput}
                         onChange={(e) => { setReferralInput(e.target.value); setCodeStatus("idle"); }}
                         onKeyDown={(e) => e.key === "Enter" && handleApplyCode()}
-                        className={`text-sm ${codeStatus === "invalid" ? "border-red-400 focus-visible:ring-red-400" : ""}`}
-                      />
-                      <Button data-testid="btn-apply-code" variant="outline" size="sm" onClick={handleApplyCode} className="shrink-0">
-                        Apply
-                      </Button>
+                        className={`text-sm ${codeStatus === "invalid" ? "border-red-400 focus-visible:ring-red-400" : ""}`} />
+                      <Button data-testid="btn-apply-code" variant="outline" size="sm" onClick={handleApplyCode} className="shrink-0">Apply</Button>
                     </div>
                   )}
-
                   {codeStatus === "invalid" && !codeApplied && (
                     <p className="text-red-500 text-xs mt-2">
-                      {referralInput.trim().toLowerCase() === REFERRAL_CODE
-                        ? "This code only applies to the Starter package."
-                        : "Invalid code. Double-check and try again."}
+                      {referralInput.trim().toLowerCase() === REFERRAL_CODE ? "This code only applies to the Starter package." : "Invalid code. Double-check and try again."}
                     </p>
                   )}
                   {!codeApplied && codeStatus === "idle" && (
