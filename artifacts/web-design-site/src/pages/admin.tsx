@@ -70,6 +70,7 @@ type Submission = {
   status?: StatusId;
   estimatedCompletion?: string;
   completedAt?: string;
+  adminNote?: string;
 };
 
 function formatDate(iso: string) {
@@ -137,15 +138,19 @@ function SubmissionCard({
   index,
   onStatusChange,
   onTrackingCodeUpdate,
+  onNoteUpdate,
 }: {
   sub: Submission;
   index: number;
   onStatusChange: (id: string, status: StatusId) => void;
   onTrackingCodeUpdate: (id: string, newCode: string) => void;
+  onNoteUpdate: (id: string, note: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [editingCode, setEditingCode] = useState(false);
   const [codeInput, setCodeInput] = useState(sub.trackingCode ?? "");
+  const [editingNote, setEditingNote] = useState(false);
+  const [noteInput, setNoteInput] = useState(sub.adminNote ?? "");
   const isComplete = sub.status === "sent";
 
   function handleSaveCode() {
@@ -329,6 +334,49 @@ function SubmissionCard({
             </div>
           </div>
 
+          {/* Admin Note */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">Admin Note</div>
+              {!editingNote && (
+                <button
+                  onClick={() => { setNoteInput(sub.adminNote ?? ""); setEditingNote(true); }}
+                  className="flex items-center gap-1 text-xs text-primary hover:underline font-semibold"
+                >
+                  <Pencil className="w-3 h-3" /> {sub.adminNote ? "Edit" : "Add Note"}
+                </button>
+              )}
+            </div>
+            {editingNote ? (
+              <div className="space-y-2">
+                <textarea
+                  value={noteInput}
+                  onChange={(e) => setNoteInput(e.target.value)}
+                  rows={3}
+                  placeholder="Add an internal note about this order…"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  autoFocus
+                />
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => { onNoteUpdate(sub.id, noteInput); setEditingNote(false); }} className="gap-1.5">
+                    <Save className="w-3.5 h-3.5" /> Save Note
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => { setNoteInput(sub.adminNote ?? ""); setEditingNote(false); }} className="gap-1.5">
+                    <X className="w-3.5 h-3.5" /> Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : sub.adminNote ? (
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-sm leading-relaxed text-foreground whitespace-pre-wrap">
+                {sub.adminNote}
+              </div>
+            ) : (
+              <div className="bg-background border border-dashed border-border rounded-xl p-4 text-sm text-muted-foreground italic">
+                No note yet — click "Add Note" to leave one.
+              </div>
+            )}
+          </div>
+
           <div className="text-xs text-muted-foreground">
             Submitted: {formatDate(sub.submittedAt)}
           </div>
@@ -385,6 +433,14 @@ export default function AdminPage() {
   function handleTrackingCodeUpdate(id: string, newCode: string) {
     const updated = submissions.map((s) =>
       s.id === id ? { ...s, trackingCode: newCode } : s
+    );
+    setSubmissions(updated);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  }
+
+  function handleNoteUpdate(id: string, note: string) {
+    const updated = submissions.map((s) =>
+      s.id === id ? { ...s, adminNote: note } : s
     );
     setSubmissions(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
@@ -574,6 +630,7 @@ export default function AdminPage() {
                 index={filtered.length - 1 - i}
                 onStatusChange={handleStatusChange}
                 onTrackingCodeUpdate={handleTrackingCodeUpdate}
+                onNoteUpdate={handleNoteUpdate}
               />
             ))}
           </div>
