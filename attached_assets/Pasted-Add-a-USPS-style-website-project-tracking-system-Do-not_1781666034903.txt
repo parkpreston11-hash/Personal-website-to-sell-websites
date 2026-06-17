@@ -1,0 +1,74 @@
+Add a USPS-style website project tracking system.
+
+Do not change the design or remove existing features.
+
+After a customer pays through Stripe, create a project/order record with:
+
+* Customer full name
+* Customer email
+* Phone number
+* Plan purchased
+* Amount paid
+* Payment status
+* Date purchased
+* Unique tracking code
+* Current project status
+* Estimated completion date, automatically set to 7 days after purchase
+
+The tracking code should:
+
+* Be shown clearly at the top of the order/admin view
+* Be unique for every customer
+* Be permanent
+* Always work when entered into the tracking page
+* Stop showing active progress once the project is marked complete
+
+Create a public page called “Track Your Website”.
+
+On that page:
+
+* Show one input box that says “Enter your tracking code”
+* Add a Track button
+* When the customer enters their code, show only tracking information, not private admin details
+
+Tracking statuses should be:
+
+1. Purchased
+2. Planning
+3. Building
+4. Final Touches
+5. Sent to Your Email
+
+Make the tracking page look like USPS package tracking:
+
+* A clean progress timeline
+* Status dots or checkpoints
+* Current step highlighted
+* Estimated completion date
+* Simple text updates under each step
+
+Create an admin page where I can:
+
+* View all orders/projects
+* See customer contact info
+* See what they paid
+* See their tracking code at the top
+* Update their tracking status manually
+* Mark the project complete
+* Search by customer name, email, or tracking code
+
+When the project reaches “Sent to Your Email”:
+
+* Mark it complete
+* Show “Project completed and sent to your email”
+* Keep the tracking code record saved, but do not show it as active anymore
+
+Make sure:
+
+* Tracking codes persist forever in the database
+* The system still works after refreshing or leaving the website
+* It works on Netlify deployment
+* Any backend routes needed for Netlify are created as Netlify Functions
+* Do not require Google login
+* Do not require customer accounts
+* Do not expose payment secret keys on the frontend

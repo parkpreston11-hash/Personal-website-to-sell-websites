@@ -30,6 +30,7 @@ export function Navbar() {
           <Link href="/#portfolio" onClick={(e) => handleScroll(e, "portfolio")} className="text-muted-foreground hover:text-foreground transition-colors">Portfolio</Link>
           <Link href="/#testimonials" onClick={(e) => handleScroll(e, "testimonials")} className="text-muted-foreground hover:text-foreground transition-colors">Testimonials</Link>
           <Link href="/#contact" onClick={(e) => handleScroll(e, "contact")} className="text-muted-foreground hover:text-foreground transition-colors">Contact</Link>
+          <Link href="/track" className="text-muted-foreground hover:text-foreground transition-colors">Track Order</Link>
         </nav>
 
         <div className="flex items-center gap-4">

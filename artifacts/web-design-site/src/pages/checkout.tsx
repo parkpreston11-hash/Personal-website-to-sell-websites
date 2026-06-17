@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Tag, X, Lock, Gift, ShieldCheck, CreditCard, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Tag, X, Lock, Gift, ShieldCheck, CreditCard, CheckCircle2, Package, Copy, Check } from "lucide-react";
 
 const REFERRAL_CODE = "mrexcellence";
 const AL_CODE = "al";
@@ -146,9 +146,35 @@ export default function CheckoutPage() {
         </div>
 
         <h1 className="text-4xl font-bold mb-2 text-center">Secure Checkout</h1>
-        <p className="text-center text-muted-foreground mb-10 flex items-center justify-center gap-1.5 text-sm">
+        <p className="text-center text-muted-foreground mb-6 flex items-center justify-center gap-1.5 text-sm">
           <ShieldCheck className="w-4 h-4 text-green-500" /> SSL encrypted · No payment charged until we confirm your project
         </p>
+
+        {/* Tracking code banner */}
+        {order.trackingCode && (
+          <div className="mb-8 bg-primary/5 border border-primary/20 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                <Package className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-0.5">Your Project Tracking Code</div>
+                <div className="font-mono font-black text-2xl tracking-widest text-primary">{order.trackingCode}</div>
+              </div>
+            </div>
+            <div className="text-sm text-muted-foreground sm:text-right">
+              <p>Save this code — use it to track your project progress at <span className="font-semibold text-foreground">/track</span></p>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(order.trackingCode);
+                }}
+                className="mt-1 inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-medium"
+              >
+                <Copy className="w-3 h-3" /> Copy code
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
 
