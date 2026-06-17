@@ -74,7 +74,8 @@ export default function CheckoutPage() {
   const [referralInput, setReferralInput] = useState("");
   const [appliedCode, setAppliedCode] = useState<string | null>(null);
   const [codeStatus, setCodeStatus] = useState<"idle" | "valid" | "invalid">("idle");
-  const [freeAddonId, setFreeAddonId] = useState<string | null>(null);
+  const [freeAddonIds, setFreeAddonIds] = useState<string[]>([]);
+  const [halfOffAddonId, setHalfOffAddonId] = useState<string | null>(null);
 
   const [payMethod, setPayMethod] = useState<"card" | "applepay">("card");
   const [cardNumber, setCardNumber] = useState("");
@@ -100,9 +101,14 @@ export default function CheckoutPage() {
     if (!order) return [];
     let ids: string[] = [...(order.addOns ?? [])];
     if (mrexcellenceApplied && !ids.includes("admin_panel")) ids = [...ids, "admin_panel"];
-    if (alApplied && freeAddonId && !ids.includes(freeAddonId)) ids = [...ids, freeAddonId];
+    if (mrexcellenceApplied && halfOffAddonId && !ids.includes(halfOffAddonId)) ids = [...ids, halfOffAddonId];
+    if (alApplied) {
+      for (const id of freeAddonIds) {
+        if (!ids.includes(id)) ids = [...ids, id];
+      }
+    }
     return ids;
-  }, [order, mrexcellenceApplied, alApplied, freeAddonId]);
+  }, [order, mrexcellenceApplied, alApplied, freeAddonIds, halfOffAddonId]);
 
   if (!order) {
     return (
@@ -125,30 +131,33 @@ export default function CheckoutPage() {
   const monthlyAddOns = addOns.filter((a) => a.isMonthly);
 
   function getAddonDisplayPrice(id: string, price: number) {
-    if (alApplied && id === freeAddonId) return 0;
+    if (alApplied && freeAddonIds.includes(id)) return 0;
+    if (mrexcellenceApplied && id === halfOffAddonId) return Math.round(price / 2 * 100) / 100;
     return price;
   }
 
   const oneTimeTotal = packageBasePrice + oneTimeAddOns.reduce((sum, a) => sum + getAddonDisplayPrice(a.id, a.price), 0);
   const monthlyTotal = monthlyAddOns.reduce((sum, a) => sum + a.price, 0);
-  const alFreeAddonValue = alApplied && freeAddonId ? (freeAddonOptions.find((a) => a.id === freeAddonId)?.price ?? 0) : 0;
+  const alFreeAddonValue = alApplied ? freeAddonIds.reduce((sum, id) => sum + (freeAddonOptions.find((a) => a.id === id)?.price ?? 0), 0) : 0;
   const alPackageDelta = alApplied ? AL_PACKAGE_PRICE - originalPackagePrice : 0;
-  const mrexcellenceSavings = mrexcellenceApplied && isStarterPackage ? originalPackagePrice - DISCOUNTED_STARTER_PRICE : 0;
+  const mrexcellencePackageSavings = mrexcellenceApplied && isStarterPackage ? originalPackagePrice - DISCOUNTED_STARTER_PRICE : 0;
+  const mrexcellenceHalfOffSavings = mrexcellenceApplied && halfOffAddonId ? (freeAddonOptions.find((a) => a.id === halfOffAddonId)?.price ?? 0) / 2 : 0;
+  const mrexcellenceSavings = mrexcellencePackageSavings + mrexcellenceHalfOffSavings;
 
   function handleApplyCode() {
     const code = referralInput.trim().toLowerCase();
     if (code === REFERRAL_CODE) {
       if (!isStarterPackage) { setCodeStatus("invalid"); return; }
-      setAppliedCode(code); setCodeStatus("valid"); setFreeAddonId(null);
+      setAppliedCode(code); setCodeStatus("valid"); setFreeAddonIds([]); setHalfOffAddonId(null);
     } else if (code === AL_CODE) {
-      setAppliedCode(code); setCodeStatus("valid"); setFreeAddonId(null);
+      setAppliedCode(code); setCodeStatus("valid"); setFreeAddonIds([]); setHalfOffAddonId(null);
     } else {
       setCodeStatus("invalid"); setAppliedCode(null);
     }
   }
 
   function handleRemoveCode() {
-    setAppliedCode(null); setReferralInput(""); setCodeStatus("idle"); setFreeAddonId(null);
+    setAppliedCode(null); setReferralInput(""); setCodeStatus("idle"); setFreeAddonIds([]); setHalfOffAddonId(null);
   }
 
   function confirmPayment() {
@@ -511,17 +520,21 @@ export default function CheckoutPage() {
                     <div className="space-y-2 text-sm border-t pt-3">
                       {oneTimeAddOns.map((addon) => {
                         const isRequired = mrexcellenceApplied && addon.id === "admin_panel";
-                        const isFree = alApplied && addon.id === freeAddonId;
+                        const isFree = alApplied && freeAddonIds.includes(addon.id);
+                        const isHalfOff = mrexcellenceApplied && addon.id === halfOffAddonId;
                         return (
                           <div key={addon.id} className="flex justify-between items-center">
                             <span className="text-muted-foreground flex items-center gap-1 flex-wrap">
                               + {addon.name}
                               {isRequired && <span className="inline-flex items-center gap-0.5 text-xs bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded-full"><Lock className="w-2.5 h-2.5" /> Required</span>}
                               {isFree && <span className="inline-flex items-center gap-0.5 text-xs bg-green-100 text-green-700 font-bold px-1.5 py-0.5 rounded-full"><Gift className="w-2.5 h-2.5" /> FREE</span>}
+                              {isHalfOff && <span className="inline-flex items-center gap-0.5 text-xs bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded-full"><Tag className="w-2.5 h-2.5" /> 50% OFF</span>}
                             </span>
                             {isFree
                               ? <span className="font-semibold text-green-600 flex items-center gap-1 shrink-0 ml-2"><span className="line-through text-muted-foreground text-xs">${addon.price}</span> $0</span>
-                              : <span className="font-semibold shrink-0 ml-2">+${getAddonDisplayPrice(addon.id, addon.price)}</span>
+                              : isHalfOff
+                                ? <span className="font-semibold text-amber-600 flex items-center gap-1 shrink-0 ml-2"><span className="line-through text-muted-foreground text-xs">${addon.price}</span> ${(addon.price / 2).toFixed(2)}</span>
+                                : <span className="font-semibold shrink-0 ml-2">+${getAddonDisplayPrice(addon.id, addon.price)}</span>
                             }
                           </div>
                         );
@@ -555,9 +568,14 @@ export default function CheckoutPage() {
                         <span className="font-semibold">${monthlyTotal}/mo</span>
                       </div>
                     )}
-                    {mrexcellenceApplied && mrexcellenceSavings > 0 && (
+                    {mrexcellenceApplied && mrexcellencePackageSavings > 0 && (
                       <div className="flex justify-between items-center text-green-600 text-xs font-semibold">
-                        <span>Referral savings</span><span>-${mrexcellenceSavings.toFixed(2)}</span>
+                        <span>Referral discount</span><span>-${mrexcellencePackageSavings.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {mrexcellenceApplied && mrexcellenceHalfOffSavings > 0 && (
+                      <div className="flex justify-between items-center text-amber-600 text-xs font-semibold">
+                        <span>50% off add-on savings</span><span>-${mrexcellenceHalfOffSavings.toFixed(2)}</span>
                       </div>
                     )}
                     {alApplied && (
@@ -569,7 +587,7 @@ export default function CheckoutPage() {
                         )}
                         {alFreeAddonValue > 0 && (
                           <div className="flex justify-between items-center text-green-600 text-xs font-semibold">
-                            <span>Free add-on value</span><span>-${alFreeAddonValue}</span>
+                            <span>Free add-ons value</span><span>-${alFreeAddonValue}</span>
                           </div>
                         )}
                       </>
@@ -578,25 +596,74 @@ export default function CheckoutPage() {
                 </CardContent>
               </Card>
 
-              {/* Al code free add-on selector */}
+              {/* Al code free add-on selector — up to 3 */}
               {alApplied && (
                 <Card className="border-green-200 dark:border-green-800">
                   <CardHeader className="bg-green-50 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800 pb-3">
                     <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400 text-sm">
-                      <Gift className="w-4 h-4" /> Pick Your Free Add-On
+                      <Gift className="w-4 h-4" /> Pick Up to 3 Free Add-Ons
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-4 pb-4">
-                    <p className="text-xs text-muted-foreground mb-3">Select 1 add-on included free with your AL code.</p>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Select up to 3 add-ons included free with your AL code.{" "}
+                      <span className="font-semibold text-green-700 dark:text-green-400">{freeAddonIds.length}/3 selected</span>
+                    </p>
                     <div className="space-y-2">
                       {freeAddonOptions.map((option) => {
-                        const selected = freeAddonId === option.id;
+                        const selected = freeAddonIds.includes(option.id);
+                        const maxReached = freeAddonIds.length >= 3 && !selected;
                         return (
-                          <button key={option.id} type="button" onClick={() => setFreeAddonId(selected ? null : option.id)}
-                            className={`w-full flex items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${selected ? "border-green-500 bg-green-50 dark:bg-green-900/20" : "border-border bg-background hover:bg-secondary/40"}`}>
+                          <button
+                            key={option.id}
+                            type="button"
+                            disabled={maxReached}
+                            onClick={() => {
+                              if (selected) {
+                                setFreeAddonIds((prev) => prev.filter((id) => id !== option.id));
+                              } else if (freeAddonIds.length < 3) {
+                                setFreeAddonIds((prev) => [...prev, option.id]);
+                              }
+                            }}
+                            className={`w-full flex items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${selected ? "border-green-500 bg-green-50 dark:bg-green-900/20" : maxReached ? "border-border bg-background opacity-40 cursor-not-allowed" : "border-border bg-background hover:bg-secondary/40"}`}
+                          >
                             <span className={`font-medium ${selected ? "text-green-700 dark:text-green-400" : ""}`}>{option.name}</span>
                             <span className={`font-bold ml-2 shrink-0 ${selected ? "text-green-600" : "text-muted-foreground line-through"}`}>
                               {selected ? "FREE" : `$${option.price}`}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* mrexcellence half-off add-on selector */}
+              {mrexcellenceApplied && (
+                <Card className="border-amber-200 dark:border-amber-800">
+                  <CardHeader className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 pb-3">
+                    <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400 text-sm">
+                      <Tag className="w-4 h-4" /> Pick 1 Add-On at 50% Off
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-4 pb-4">
+                    <p className="text-xs text-muted-foreground mb-3">Choose any add-on to receive at half price with your MREXCELLENCE code.</p>
+                    <div className="space-y-2">
+                      {freeAddonOptions.map((option) => {
+                        const selected = halfOffAddonId === option.id;
+                        const halfPrice = (option.price / 2).toFixed(2);
+                        return (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() => setHalfOffAddonId(selected ? null : option.id)}
+                            className={`w-full flex items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${selected ? "border-amber-500 bg-amber-50 dark:bg-amber-900/20" : "border-border bg-background hover:bg-secondary/40"}`}
+                          >
+                            <span className={`font-medium ${selected ? "text-amber-700 dark:text-amber-400" : ""}`}>{option.name}</span>
+                            <span className={`font-bold ml-2 shrink-0 flex items-center gap-1 ${selected ? "text-amber-600" : "text-muted-foreground"}`}>
+                              {selected && <span className="line-through text-muted-foreground text-xs font-normal">${option.price}</span>}
+                              {selected ? `$${halfPrice}` : `$${option.price}`}
                             </span>
                           </button>
                         );
@@ -619,8 +686,8 @@ export default function CheckoutPage() {
                         <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
                         <span className="font-bold text-green-700 dark:text-green-400 uppercase tracking-wider text-sm">{appliedCode}</span>
                         <span className="text-green-600 text-xs">
-                          {mrexcellenceApplied && "— Starter $99.99 + Admin Panel required!"}
-                          {alApplied && "— All packages $600 + 1 free add-on!"}
+                          {mrexcellenceApplied && "— Starter $99.99 + Admin Panel + 1 add-on 50% off!"}
+                          {alApplied && "— All packages $600 + up to 3 free add-ons!"}
                         </span>
                       </div>
                       <button onClick={handleRemoveCode} className="text-muted-foreground hover:text-foreground ml-2 shrink-0"><X className="w-4 h-4" /></button>
