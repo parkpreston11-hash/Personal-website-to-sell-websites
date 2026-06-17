@@ -1,0 +1,100 @@
+Make this website fully Netlify-ready without changing the design or removing features.
+
+Main goal:
+The site must build and work correctly on Netlify, including Stripe payments, admin dashboard, customer project tracking, and all routes.
+
+Check and fix:
+
+1. Build settings
+- Make sure the correct build command is used.
+- Make sure the correct publish/output folder is used.
+- Make sure package.json scripts are correct.
+- Make sure dependencies and lockfile are updated.
+- Make sure the app builds successfully with npm run build.
+
+2. Netlify routing
+- Add a netlify.toml file if missing.
+- Add redirects so refreshing pages does not cause 404 errors.
+- Make sure these routes work:
+  /admin
+  /track
+  /success
+  /cancel
+  any nested frontend routes
+
+3. Backend/API
+- Do not rely on Replit-only backend routes.
+- Convert backend API routes to Netlify Functions.
+- Put functions inside netlify/functions.
+- Frontend API calls should use /.netlify/functions/[function-name].
+- Make sure local development still works if possible.
+
+4. Stripe payments
+- Use Stripe Checkout only.
+- Do not build custom card forms.
+- Do not require Google login.
+- Do not expose Stripe secret keys in frontend code.
+- Stripe secret key must only be used in Netlify Functions.
+- Add checkout session creation function.
+- Add Stripe webhook function if needed.
+- Add success and cancel pages.
+
+5. Environment variables
+Use these environment variables:
+- STRIPE_SECRET_KEY
+- STRIPE_WEBHOOK_SECRET
+- STRIPE_PRICE_ID_MONTHLY
+- DATABASE_URL
+- ADMIN_PASSWORD
+
+Add clear comments or documentation explaining that these must be added inside Netlify:
+Site settings → Environment variables
+
+6. Database/persistence
+- Tracking codes must persist after refresh and after deployment.
+- Customer orders must be saved in the database.
+- Do not use localStorage as the main storage for orders or tracking.
+- If database tables are missing, create them safely.
+- Store:
+  customer name
+  customer email
+  phone number
+  plan purchased
+  amount paid
+  payment status
+  tracking code
+  project status
+  estimated completion date
+  created date
+
+7. Tracking system
+- Create a USPS-style tracking page at /track.
+- Customer enters tracking code only.
+- Show only project tracking info, not private admin info.
+- Status steps:
+  Purchased
+  Planning
+  Building
+  Final Touches
+  Sent to Your Email
+- Tracking code should always work unless project is complete.
+- When complete, show “Project completed and sent to your email.”
+
+8. Admin dashboard
+- Admin can see all orders.
+- Admin can see contact info, payment info, tracking code, and status.
+- Admin can update project status manually.
+- Admin can mark project complete.
+- Admin search by name, email, or tracking code.
+- Keep admin password protected.
+
+9. Do not break the website
+- Do not redesign the site.
+- Do not remove existing pages.
+- Do not remove existing forms.
+- Do not remove existing admin features.
+- Fix errors instead of rewriting the whole project.
+- After changes, run build and fix all build errors.
+
+Final requirement:
+Before finishing, test the production build locally and confirm the Netlify deploy should work.

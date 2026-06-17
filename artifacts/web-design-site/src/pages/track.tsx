@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, CheckCircle2, Circle, Clock, Package, Mail } from "lucide-react";
+import { Search, CheckCircle2, Circle, Clock, Package, Mail, FlaskConical } from "lucide-react";
 
 const STATUSES = [
   {
@@ -40,6 +40,21 @@ type StatusId = (typeof STATUSES)[number]["id"];
 
 const STATUS_ORDER: StatusId[] = ["purchased", "planning", "building", "final_touches", "sent"];
 
+const DEMO_CODE = "WSL-DEMO01";
+
+const DEMO_SUBMISSION = {
+  trackingCode: DEMO_CODE,
+  name: "Alex Johnson",
+  email: "alex@example.com",
+  businessName: "Johnson Consulting",
+  packageId: "business",
+  total: 999,
+  submittedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+  estimatedCompletion: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+  status: "building" as StatusId,
+  completedAt: undefined as string | undefined,
+};
+
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", {
     month: "long",
@@ -61,14 +76,27 @@ export default function TrackPage() {
   const [result, setResult] = useState<any | null>(null);
   const [searched, setSearched] = useState(false);
 
-  function handleTrack() {
-    const code = codeInput.trim().toUpperCase();
+  function handleTrack(overrideCode?: string) {
+    const code = (overrideCode ?? codeInput).trim().toUpperCase();
     if (!code) return;
+
+    // Check demo code first
+    if (code === DEMO_CODE) {
+      setResult(DEMO_SUBMISSION);
+      setSearched(true);
+      return;
+    }
+
     const raw = localStorage.getItem("webcraft_submissions");
     const all = raw ? JSON.parse(raw) : [];
     const found = all.find((s: any) => s.trackingCode === code);
     setResult(found ?? null);
     setSearched(true);
+  }
+
+  function handleLoadDemo() {
+    setCodeInput(DEMO_CODE);
+    handleTrack(DEMO_CODE);
   }
 
   const isComplete = result?.status === "sent";
@@ -106,17 +134,43 @@ export default function TrackPage() {
               onKeyDown={(e) => e.key === "Enter" && handleTrack()}
               className="font-mono text-base tracking-widest uppercase"
             />
-            <Button onClick={handleTrack} className="shrink-0 gap-2 px-6">
+            <Button onClick={() => handleTrack()} className="shrink-0 gap-2 px-6">
               <Search className="w-4 h-4" />
               Track
             </Button>
           </div>
+
           {searched && !result && (
             <p className="text-red-500 text-sm mt-3">
               No project found for that code. Double-check and try again.
             </p>
           )}
+
+          {/* Demo hint */}
+          <div className="mt-4 pt-4 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <p className="text-xs text-muted-foreground">
+              Your tracking code was sent when you submitted your order. It looks like{" "}
+              <span className="font-mono font-semibold">WSL-XXXXXX</span>.
+            </p>
+            <button
+              onClick={handleLoadDemo}
+              className="inline-flex items-center gap-1.5 text-xs text-primary font-semibold hover:underline shrink-0"
+            >
+              <FlaskConical className="w-3.5 h-3.5" />
+              Try demo code
+            </button>
+          </div>
         </div>
+
+        {/* Demo badge */}
+        {result?.trackingCode === DEMO_CODE && (
+          <div className="mb-4 flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-2.5 text-sm text-amber-700 dark:text-amber-400">
+            <FlaskConical className="w-4 h-4 shrink-0" />
+            <span>
+              This is <strong>sample data</strong> for demonstration. Real orders are saved when a customer completes the quote form.
+            </span>
+          </div>
+        )}
 
         {/* Result */}
         {result && (
@@ -244,14 +298,6 @@ export default function TrackPage() {
                 </div>
               )}
             </div>
-          </div>
-        )}
-
-        {/* Help text when nothing searched yet */}
-        {!searched && (
-          <div className="text-center py-8 text-muted-foreground text-sm">
-            <p>Your tracking code was provided when you submitted your order.</p>
-            <p className="mt-1">It looks like <span className="font-mono font-semibold">WSL-XXXXXX</span>.</p>
           </div>
         )}
       </div>
