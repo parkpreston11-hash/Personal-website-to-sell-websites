@@ -1,3 +1,4 @@
+import { SEOHead } from "@/components/SEOHead";
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -385,8 +386,6 @@ function SubmissionCard({
     </div>
   );
 }
-
-import { SEOHead } from "@/components/SEOHead";
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);

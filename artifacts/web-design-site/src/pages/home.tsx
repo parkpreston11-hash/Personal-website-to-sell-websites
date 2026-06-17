@@ -1,3 +1,4 @@
+import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Link } from "wouter";
@@ -30,8 +31,6 @@ const services = [
   { icon: CalendarDays, title: "Booking Setup", desc: "Allow clients to schedule appointments easily." }
 ];
 
-
-import { SEOHead } from "@/components/SEOHead";
 
 const LOCAL_BUSINESS_SCHEMA = {
   "@context": "https://schema.org",

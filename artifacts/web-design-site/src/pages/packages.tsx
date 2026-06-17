@@ -1,3 +1,4 @@
+import { SEOHead } from "@/components/SEOHead";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, X, Zap, TrendingUp, Crown, ArrowRight, Users, Clock, ShieldCheck } from "lucide-react";
@@ -108,8 +109,6 @@ const trust = [
   { icon: ShieldCheck, stat: "5-Star", label: "Customer satisfaction" },
   { icon: Clock, stat: "3–5 days", label: "Average delivery" },
 ];
-
-import { SEOHead } from "@/components/SEOHead";
 
 const FAQ_SCHEMA = {
   "@context": "https://schema.org",

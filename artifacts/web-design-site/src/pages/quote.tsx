@@ -1,3 +1,4 @@
+import { SEOHead } from "@/components/SEOHead";
 import { useLocation, useSearch } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -41,8 +42,6 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
-
-import { SEOHead } from "@/components/SEOHead";
 
 export default function QuotePage() {
   const [, setLocation] = useLocation();

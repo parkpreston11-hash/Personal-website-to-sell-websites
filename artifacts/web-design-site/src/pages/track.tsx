@@ -1,3 +1,4 @@
+import { SEOHead } from "@/components/SEOHead";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,8 +71,6 @@ function getStepState(stepId: StatusId, currentStatus: StatusId): "done" | "acti
   if (stepIdx === currentIdx) return "active";
   return "upcoming";
 }
-
-import { SEOHead } from "@/components/SEOHead";
 
 export default function TrackPage() {
   const [codeInput, setCodeInput] = useState("");

@@ -1,3 +1,4 @@
+import { SEOHead } from "@/components/SEOHead";
 import { useEffect, useState, useMemo } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -67,8 +68,6 @@ function generateTrackingCode(): string {
 }
 
 type PaymentState = "idle" | "processing" | "success" | "declined";
-
-import { SEOHead } from "@/components/SEOHead";
 
 export default function CheckoutPage() {
   const [order, setOrder] = useState<any>(null);
