@@ -13,8 +13,10 @@ import {
 
 const REFERRAL_CODE = "mrexcellence";
 const AL_CODE = "al";
+const JAMBA_CODE = "jamba";
 const DISCOUNTED_STARTER_PRICE = 99.99;
 const AL_PACKAGE_PRICE = 600;
+const JAMBA_PRICE = 0.30;
 const DECLINE_CARD = "4000000000000002";
 
 const packageNames: Record<string, string> = {
@@ -96,6 +98,7 @@ export default function CheckoutPage() {
 
   const mrexcellenceApplied = appliedCode === REFERRAL_CODE;
   const alApplied = appliedCode === AL_CODE;
+  const jambaApplied = appliedCode === JAMBA_CODE;
   const isStarterPackage = order?.packageId === "starter";
 
   const effectiveAddOnIds: string[] = useMemo(() => {
@@ -121,6 +124,7 @@ export default function CheckoutPage() {
   }
 
   const packageBasePrice = (() => {
+    if (jambaApplied) return JAMBA_PRICE;
     if (alApplied) return AL_PACKAGE_PRICE;
     if (mrexcellenceApplied && isStarterPackage) return DISCOUNTED_STARTER_PRICE;
     return packagePrices[order.packageId] ?? 0;
@@ -132,6 +136,7 @@ export default function CheckoutPage() {
   const monthlyAddOns = addOns.filter((a) => a.isMonthly);
 
   function getAddonDisplayPrice(id: string, price: number) {
+    if (jambaApplied) return 0;
     if (alApplied && freeAddonIds.includes(id)) return 0;
     if (mrexcellenceApplied && id === halfOffAddonId) return Math.round(price / 2 * 100) / 100;
     return price;
@@ -151,6 +156,8 @@ export default function CheckoutPage() {
       if (!isStarterPackage) { setCodeStatus("invalid"); return; }
       setAppliedCode(code); setCodeStatus("valid"); setFreeAddonIds([]); setHalfOffAddonId(null);
     } else if (code === AL_CODE) {
+      setAppliedCode(code); setCodeStatus("valid"); setFreeAddonIds([]); setHalfOffAddonId(null);
+    } else if (code === JAMBA_CODE) {
       setAppliedCode(code); setCodeStatus("valid"); setFreeAddonIds([]); setHalfOffAddonId(null);
     } else {
       setCodeStatus("invalid"); setAppliedCode(null);
@@ -728,6 +735,7 @@ export default function CheckoutPage() {
                         <span className="text-green-600 text-xs">
                           {mrexcellenceApplied && "— Starter $99.99 + Admin Panel + 1 add-on 50% off!"}
                           {alApplied && "— All packages $600 + up to 3 free add-ons!"}
+                          {jambaApplied && "— Everything $0.30 total!"}
                         </span>
                       </div>
                       <button onClick={handleRemoveCode} className="text-muted-foreground hover:text-foreground ml-2 shrink-0"><X className="w-4 h-4" /></button>
