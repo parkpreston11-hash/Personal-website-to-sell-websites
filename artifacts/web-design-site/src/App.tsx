@@ -14,6 +14,7 @@ import RealEstateDemo from "@/pages/demos/realestate";
 import PackagesPage from "@/pages/packages";
 import AdminPage from "@/pages/admin";
 import TrackPage from "@/pages/track";
+import SuccessPage from "@/pages/success";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { AiChat } from "@/components/AiChat";
@@ -47,6 +48,7 @@ function Router() {
           <Route path="/packages" component={PackagesPage} />
           <Route path="/admin" component={AdminPage} />
           <Route path="/track" component={TrackPage} />
+          <Route path="/success" component={SuccessPage} />
           <Route path="/demo/restaurant" component={RestaurantDemo} />
           <Route path="/demo/barber" component={BarberDemo} />
           <Route path="/demo/realestate" component={RealEstateDemo} />

@@ -87,6 +87,7 @@ export default function CheckoutPage() {
   const [paymentState, setPaymentState] = useState<PaymentState>("idle");
   const [confirmedCode, setConfirmedCode] = useState<string | null>(null);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [stripeError, setStripeError] = useState<string | null>(null);
 
   useEffect(() => {
     const savedOrder = localStorage.getItem("webcraft_order");
@@ -192,27 +193,61 @@ export default function CheckoutPage() {
     setPaymentState("success");
   }
 
-  function handlePayCard() {
+  async function handlePayStripe() {
+    setStripeError(null);
     setCardError("");
-    const digits = cardNumber.replace(/\s/g, "");
-    if (digits.length !== 16) { setCardError("Please enter a valid 16-digit card number."); return; }
-    if (cardExpiry.replace(/\s/g, "").length < 4) { setCardError("Please enter a valid expiry date."); return; }
-    if (cardCvc.length < 3) { setCardError("Please enter a valid security code."); return; }
-    if (!cardName.trim()) { setCardError("Please enter the name on your card."); return; }
-
     setPaymentState("processing");
-    setTimeout(() => {
-      if (digits === DECLINE_CARD) {
-        setPaymentState("declined");
-      } else {
-        confirmPayment();
+
+    const productParts = [packageNames[order.packageId] ?? "Website"];
+    if (effectiveAddOnIds.length > 0) {
+      productParts.push(`+ ${effectiveAddOnIds.length} add-on${effectiveAddOnIds.length > 1 ? "s" : ""}`);
+    }
+    const productName = `${productParts.join(" ")} — WebStudioLaunch`;
+
+    localStorage.setItem(
+      "webcraft_effective_order",
+      JSON.stringify({
+        packageId: order.packageId,
+        name: order.name,
+        email: order.email,
+        phone: order.phone,
+        businessName: order.businessName,
+        addOns: effectiveAddOnIds,
+        details: order.details ?? "",
+        total: oneTimeTotal,
+        monthly: monthlyTotal,
+      })
+    );
+
+    try {
+      const res = await fetch("/.netlify/functions/create-checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: oneTimeTotal,
+          productName,
+          customerEmail: order.email,
+          customerName: order.name,
+          origin: window.location.origin,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "Payment could not be started. Please try again.");
       }
-    }, 2000);
+      window.location.href = data.url;
+    } catch (err: any) {
+      setStripeError(err.message || "Something went wrong. Please try again.");
+      setPaymentState("idle");
+    }
+  }
+
+  function handlePayCard() {
+    handlePayStripe();
   }
 
   function handlePayApple() {
-    setPaymentState("processing");
-    setTimeout(() => confirmPayment(), 2000);
+    handlePayStripe();
   }
 
   function handleCopyCode() {
@@ -391,6 +426,11 @@ export default function CheckoutPage() {
                       <p className="font-semibold text-base">Pay with Apple Pay</p>
                       <p className="text-muted-foreground text-sm mt-1">Use Face ID, Touch ID, or your passcode</p>
                     </div>
+                    {stripeError && (
+                      <div className="w-full flex items-start gap-2 text-red-500 text-sm bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2 text-left">
+                        <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" /> {stripeError}
+                      </div>
+                    )}
                     <button type="button" onClick={handlePayApple} disabled={isProcessing}
                       className="w-full bg-black text-white rounded-xl py-3.5 font-semibold text-base flex items-center justify-center gap-2 hover:bg-black/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
                       {isProcessing ? <><Loader2 className="w-5 h-5 animate-spin" /> Processing…</> : (
@@ -452,9 +492,9 @@ export default function CheckoutPage() {
                         className="uppercase" disabled={isProcessing} />
                     </div>
 
-                    {cardError && (
+                    {(cardError || stripeError) && (
                       <div className="flex items-center gap-2 text-red-500 text-sm">
-                        <AlertTriangle className="w-4 h-4 shrink-0" /> {cardError}
+                        <AlertTriangle className="w-4 h-4 shrink-0" /> {stripeError || cardError}
                       </div>
                     )}
 
@@ -466,8 +506,8 @@ export default function CheckoutPage() {
                           : <><Lock className="w-5 h-5" /> Pay ${oneTimeTotal.toFixed(2)}{monthlyTotal > 0 && <span className="text-sm font-normal opacity-80">+ ${monthlyTotal}/mo</span>}</>
                         }
                       </button>
-                      <p className="text-center text-xs text-muted-foreground mt-2">
-                        To test a declined card, use <span className="font-mono font-semibold">4000 0000 0000 0002</span>
+                      <p className="text-center text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1.5">
+                        <ShieldCheck className="w-3.5 h-3.5 text-green-500" /> Payments secured and processed by Stripe
                       </p>
                     </div>
                   </div>
