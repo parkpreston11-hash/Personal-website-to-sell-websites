@@ -40,7 +40,7 @@ const LOCAL_BUSINESS_SCHEMA = {
   "url": "https://webstudiolaunch.com",
   "logo": "https://webstudiolaunch.com/favicon.svg",
   "image": "https://webstudiolaunch.com/opengraph.jpg",
-  "email": "hello@webstudiolaunch.com",
+  "email": "webstudioslaunchsupport@gmail.com",
   "description": "Professional web design services for businesses, creators, and professionals. Modern, high-converting websites starting at $499.",
   "priceRange": "$499–$1,999",
   "areaServed": "Worldwide",
@@ -112,7 +112,7 @@ export default function Home() {
             className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-10 border-t border-border"
           >
             {[
-              "100+ Websites Sold",
+              "Built to Help Businesses Grow Online",
               "5-Star Satisfaction",
               "Fast Delivery",
               "Custom Business Designs"
@@ -271,9 +271,9 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {[
-              { name: "Sarah Jenkins", biz: "Real Estate Agent", text: "WebStudioLaunch completely transformed my online presence. I'm getting more leads than ever before." },
-              { name: "Michael Chen", biz: "Restaurant Owner", text: "The new website is beautiful and the menu is so easy to read on mobile. Highly recommended!" },
-              { name: "David Miller", biz: "Financial Consultant", text: "Professional, fast, and responsive. They built exactly what I needed to build trust with my clients." }
+              { name: "Henry", biz: "Real Estate Agent", text: "WebStudioLaunch completely transformed my online presence. I'm getting more leads than ever before." },
+              { name: "Andrea", biz: "Restaurant Owner", text: "The new website is beautiful and the menu is so easy to read on mobile. Highly recommended!" },
+              { name: "Al", biz: "Financial Consultant", text: "Professional, fast, and responsive. They built exactly what I needed to build trust with my clients." }
             ].map((t, i) => (
               <Card key={i} className="bg-background border-none shadow-md">
                 <CardHeader>
@@ -418,7 +418,7 @@ export default function Home() {
         <div className="container mx-auto px-4 md:px-8 max-w-4xl text-center">
           <h2 className="text-3xl md:text-5xl font-bold mb-8">Ready to get your website built?</h2>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mb-12 text-lg">
-            <div className="font-semibold text-primary">hello@webstudiolaunch.com</div>
+            <div className="font-semibold text-primary">webstudioslaunchsupport@gmail.com</div>
           </div>
           <Link href="/quote">
             <Button size="lg" className="h-16 px-10 text-xl shadow-xl shadow-primary/20">Start Your Project Now</Button>

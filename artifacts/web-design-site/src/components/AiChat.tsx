@@ -37,7 +37,7 @@ const faqs: { patterns: string[]; answer: string }[] = [
   {
     patterns: ["contact", "reach", "talk", "call", "email", "phone"],
     answer:
-      "You can reach us at:\n\n• Email: hello@webstudiolaunch.com\n\nOr scroll to the Contact section at the bottom of the page and send us a message directly.",
+      "You can reach us at:\n\n• Email: webstudioslaunchsupport@gmail.com\n\nOr scroll to the Contact section at the bottom of the page and send us a message directly.",
   },
   {
     patterns: ["refund", "guarantee", "money back", "revision", "change"],

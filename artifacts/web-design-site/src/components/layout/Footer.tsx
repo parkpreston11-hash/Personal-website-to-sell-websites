@@ -25,7 +25,7 @@ export function Footer() {
           <div>
             <h4 className="font-semibold text-lg mb-4">Contact</h4>
             <ul className="space-y-2 text-muted">
-              <li>hello@webstudiolaunch.com</li>
+              <li>webstudioslaunchsupport@gmail.com</li>
             </ul>
           </div>
         </div>

@@ -105,7 +105,7 @@ const objections = [
 ];
 
 const trust = [
-  { icon: Users, stat: "100+", label: "Businesses launched" },
+  { icon: Users, stat: "Custom", label: "Websites built for growth" },
   { icon: ShieldCheck, stat: "5-Star", label: "Customer satisfaction" },
   { icon: Clock, stat: "3–5 days", label: "Average delivery" },
 ];
